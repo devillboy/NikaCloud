@@ -3,9 +3,12 @@ import { Link, useLocation } from 'react-router-dom';
 
 export default function Footer() {
   const location = useLocation();
-  const isAdmin = location.pathname.startsWith('/admin') || location.pathname === '/login';
+  const hideFooter = location.pathname.startsWith('/admin') || 
+                     location.pathname === '/login' || 
+                     location.pathname === '/claim-free-server' || 
+                     location.pathname === '/dashboard';
 
-  if (isAdmin) return null;
+  if (hideFooter) return null;
 
   return (
     <footer className="border-t border-white/10 bg-brand-darker relative overflow-hidden">

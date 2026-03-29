@@ -1,14 +1,16 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Cloud, LayoutDashboard, Menu, X } from 'lucide-react';
+import { Cloud, LayoutDashboard, Menu, X, LogOut } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const isAdmin = location.pathname.startsWith('/admin') || location.pathname === '/login';
+  const { user, isAdmin, logout } = useAuth();
+  const isAuthPage = location.pathname.startsWith('/admin') || location.pathname === '/login' || location.pathname === '/claim-free-server';
 
-  if (isAdmin) return null; // Admin has its own sidebar/nav
+  if (isAuthPage) return null; // Admin has its own sidebar/nav
 
   return (
     <nav className="fixed w-full z-50 top-0 transition-all duration-300 glass-panel border-b-0">
@@ -33,16 +35,47 @@ export default function Navbar() {
             <a href="#vps" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">VPS</a>
             <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Discord</a>
             
-            <Link to="/login">
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-blue hover:bg-blue-600 text-white text-sm font-medium transition-colors"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                Client Area
-              </motion.button>
-            </Link>
+            {user ? (
+              <div className="flex items-center gap-4">
+                {isAdmin ? (
+                  <Link to="/admin">
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-blue hover:bg-blue-600 text-white text-sm font-medium transition-colors"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Admin Portal
+                    </motion.button>
+                  </Link>
+                ) : (
+                  <Link to="/dashboard">
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-blue hover:bg-blue-600 text-white text-sm font-medium transition-colors"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Dashboard
+                    </motion.button>
+                  </Link>
+                )}
+                <button onClick={() => logout()} className="text-gray-300 hover:text-white transition-colors">
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <Link to="/login">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-blue hover:bg-blue-600 text-white text-sm font-medium transition-colors"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Client Area
+                </motion.button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -66,10 +99,31 @@ export default function Navbar() {
             <a href="#minecraft" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">Minecraft</a>
             <a href="#vps" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">VPS</a>
             <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="text-base font-medium text-gray-300 hover:text-white">Discord</a>
-            <Link to="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-blue hover:bg-blue-600 text-white font-medium">
-              <LayoutDashboard className="w-5 h-5" />
-              Client Area
-            </Link>
+            
+            {user ? (
+              <>
+                {isAdmin ? (
+                  <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-blue hover:bg-blue-600 text-white font-medium">
+                    <LayoutDashboard className="w-5 h-5" />
+                    Admin Portal
+                  </Link>
+                ) : (
+                  <Link to="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-blue hover:bg-blue-600 text-white font-medium">
+                    <LayoutDashboard className="w-5 h-5" />
+                    Dashboard
+                  </Link>
+                )}
+                <button onClick={() => { logout(); setIsOpen(false); }} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium">
+                  <LogOut className="w-5 h-5" />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link to="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-blue hover:bg-blue-600 text-white font-medium">
+                <LayoutDashboard className="w-5 h-5" />
+                Client Area
+              </Link>
+            )}
           </div>
         </motion.div>
       )}

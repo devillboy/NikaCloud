@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the hosting platform",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User's email address"
+        },
+        "name": {
+          "type": "string",
+          "description": "User's display name"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "user"],
+          "description": "User's role"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["email", "role", "createdAt"]
+    },
+    "Plan": {
+      "title": "Hosting Plan",
+      "description": "A hosting plan available for purchase",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the plan"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of hosting (e.g., Minecraft, VPS)"
+        },
+        "price": {
+          "type": "number",
+          "description": "Monthly price"
+        },
+        "ram": {
+          "type": "string",
+          "description": "Amount of RAM"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Active", "Inactive"],
+          "description": "Status of the plan"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["name", "type", "price", "ram", "status", "createdAt"]
+    },
+    "Server": {
+      "title": "Deployed Server",
+      "description": "A server deployed by a user",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the server"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of the server"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Online", "Offline", "Starting", "Stopping"],
+          "description": "Current status"
+        },
+        "ip": {
+          "type": "string",
+          "description": "IP address"
+        },
+        "userId": {
+          "type": "string",
+          "description": "ID of the user who owns the server"
+        },
+        "planId": {
+          "type": "string",
+          "description": "ID of the plan this server uses"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["name", "type", "status", "userId", "planId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Collection of users"
+    },
+    "/plans/{planId}": {
+      "schema": { "$ref": "#/entities/Plan" },
+      "description": "Collection of hosting plans"
+    },
+    "/servers/{serverId}": {
+      "schema": { "$ref": "#/entities/Server" },
+      "description": "Collection of deployed servers"
+    }
+  }
+}

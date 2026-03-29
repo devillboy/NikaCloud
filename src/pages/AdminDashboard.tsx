@@ -15,11 +15,13 @@ import {
   Edit2,
   Plus
 } from 'lucide-react';
-import { Link, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useAuth();
   
   const links = [
     { icon: LayoutDashboard, label: 'Analytics', path: '/admin' },
@@ -27,6 +29,11 @@ const Sidebar = () => {
     { icon: Users, label: 'Users', path: '/admin/users' },
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   return (
     <div className="w-64 h-screen bg-brand-card border-r border-slate-800 flex flex-col fixed left-0 top-0">
@@ -59,7 +66,7 @@ const Sidebar = () => {
 
       <div className="p-4 border-t border-slate-800">
         <button 
-          onClick={() => navigate('/')}
+          onClick={handleLogout}
           className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-colors"
         >
           <LogOut className="w-5 h-5" />
@@ -71,6 +78,8 @@ const Sidebar = () => {
 };
 
 const Topbar = () => {
+  const { user } = useAuth();
+  
   return (
     <header className="h-20 bg-brand-darker border-b border-slate-800 flex items-center justify-between px-8 sticky top-0 z-10">
       <div className="flex items-center gap-4 flex-1">
@@ -91,24 +100,54 @@ const Topbar = () => {
         </button>
         <div className="flex items-center gap-3 pl-6 border-l border-slate-800">
           <div className="text-right hidden md:block">
-            <div className="text-sm font-medium text-white">Admin User</div>
-            <div className="text-xs text-slate-500">admin@nikacloud.com</div>
+            <div className="text-sm font-medium text-white">{user?.displayName || 'Admin User'}</div>
+            <div className="text-xs text-slate-500">{user?.email || 'admin@nikacloud.com'}</div>
           </div>
-          <div className="w-10 h-10 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold">
-            A
-          </div>
+          {user?.photoURL ? (
+            <img src={user.photoURL} alt="User" className="w-10 h-10 rounded-full object-cover" referrerPolicy="no-referrer" />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold">
+              {user?.displayName?.charAt(0) || 'A'}
+            </div>
+          )}
         </div>
       </div>
     </header>
   );
 };
 
+import { useState, useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
+
 const Analytics = () => {
+  const [servers, setServers] = useState<any[]>([]);
+  const [usersCount, setUsersCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const serversSnapshot = await getDocs(collection(db, 'servers'));
+        const serversList = serversSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setServers(serversList);
+
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        setUsersCount(usersSnapshot.size);
+      } catch (error) {
+        console.error("Error fetching admin data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const stats = [
-    { label: 'Active Servers', value: '12', icon: Server, color: 'text-brand-blue', bg: 'bg-brand-blue/10' },
-    { label: 'Total Users', value: '1,248', icon: Users, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-    { label: 'Network Traffic', value: '4.2 TB', icon: Activity, color: 'text-green-500', bg: 'bg-green-500/10' },
-    { label: 'Storage Used', value: '850 GB', icon: Database, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    { label: 'Active Servers', value: servers.length.toString(), icon: Server, color: 'text-brand-blue', bg: 'bg-brand-blue/10' },
+    { label: 'Total Users', value: usersCount.toString(), icon: Users, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { label: 'Network Traffic', value: 'Live', icon: Activity, color: 'text-green-500', bg: 'bg-green-500/10' },
+    { label: 'Storage Used', value: 'Dynamic', icon: Database, color: 'text-orange-500', bg: 'bg-orange-500/10' },
   ];
 
   return (
@@ -145,21 +184,21 @@ const Analytics = () => {
             <button className="text-sm text-brand-blue hover:text-blue-400 font-medium">View All</button>
           </div>
           <div className="space-y-4">
-            {[
-              { name: 'Survival SMP', type: 'Minecraft - Iron', status: 'Online', ip: '192.168.1.101:25565' },
-              { name: 'Web Server', type: 'VPS - Pro', status: 'Online', ip: '10.0.0.45' },
-              { name: 'Lobby', type: 'Minecraft - Dirt', status: 'Offline', ip: '192.168.1.102:25565' },
-            ].map((server, i) => (
+            {loading ? (
+              <div className="text-slate-400">Loading servers...</div>
+            ) : servers.length === 0 ? (
+              <div className="text-slate-400">No servers deployed yet.</div>
+            ) : servers.slice(0, 5).map((server, i) => (
               <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-slate-900/50 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer">
                 <div className="flex items-center gap-4">
-                  <div className={`w-3 h-3 rounded-full ${server.status === 'Online' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-red-500'}`} />
+                  <div className={`w-3 h-3 rounded-full ${server.status === 'Online' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-yellow-500'}`} />
                   <div>
                     <div className="font-medium text-white">{server.name}</div>
                     <div className="text-xs text-slate-400">{server.type}</div>
                   </div>
                 </div>
                 <div className="text-right hidden sm:block">
-                  <div className="text-sm font-mono text-slate-300">{server.ip}</div>
+                  <div className="text-sm font-mono text-slate-300">{server.ip || 'Pending...'}</div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-slate-500" />
               </div>
@@ -269,8 +308,18 @@ const PlanManagement = () => {
 };
 
 export default function AdminDashboard() {
+  const { user, isAdmin, loading } = useAuth();
+
+  if (loading) {
+    return <div className="min-h-screen bg-brand-darker flex items-center justify-center text-white">Loading...</div>;
+  }
+
+  if (!user || !isAdmin) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
-    <div className="min-h-screen bg-brand-darker flex">
+    <div className="flex-1 bg-brand-darker flex">
       <Sidebar />
       <div className="flex-1 ml-64 flex flex-col">
         <Topbar />

@@ -1,0 +1,152 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - email: string (required) - User's email address
+    //   - name: string (optional) - User's display name
+    //   - role: string (required) - User's role ('admin' or 'user')
+    //   - createdAt: timestamp (required) - Creation timestamp
+    //
+    // Collection: plans
+    // Document ID: {planId}
+    // Fields:
+    //   - name: string (required) - Name of the plan
+    //   - type: string (required) - Type of hosting
+    //   - price: number (required) - Monthly price
+    //   - ram: string (required) - Amount of RAM
+    //   - status: string (required) - Status ('Active' or 'Inactive')
+    //   - createdAt: timestamp (required) - Creation timestamp
+    //
+    // Collection: servers
+    // Document ID: {serverId}
+    // Fields:
+    //   - name: string (required) - Name of the server
+    //   - type: string (required) - Type of the server
+    //   - status: string (required) - Current status
+    //   - ip: string (optional) - IP address
+    //   - userId: string (required) - ID of the user who owns the server
+    //   - planId: string (required) - ID of the plan this server uses
+    //   - createdAt: timestamp (required) - Creation timestamp
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "ghoshsima874@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidOptionalString(field, minLen, maxLen) {
+      return !(field in request.resource.data) ||
+             (request.resource.data[field] is string &&
+              request.resource.data[field].size() >= minLen &&
+              request.resource.data[field].size() <= maxLen);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['email', 'name', 'displayName', 'photoURL', 'role', 'hasClaimedFreeServer', 'createdAt']) &&
+             data.email is string && isValidEmail(data.email) &&
+             isValidOptionalString('name', 0, 100) &&
+             isValidOptionalString('displayName', 0, 100) &&
+             isValidOptionalString('photoURL', 0, 1000) &&
+             data.role in ['admin', 'user', 'client'] &&
+             (!( 'hasClaimedFreeServer' in data ) || data.hasClaimedFreeServer is bool) &&
+             (data.createdAt is timestamp || data.createdAt is string);
+    }
+
+    function isValidPlan(data) {
+      return hasOnlyAllowedFields(['name', 'type', 'price', 'ram', 'status', 'createdAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.type is string && data.type.size() > 0 && data.type.size() < 50 &&
+             data.price is number && data.price >= 0 &&
+             data.ram is string && data.ram.size() > 0 && data.ram.size() < 20 &&
+             data.status in ['Active', 'Inactive'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidServer(data) {
+      return hasOnlyAllowedFields(['name', 'type', 'status', 'ip', 'userId', 'planId', 'panelId', 'createdAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.type is string && data.type.size() > 0 && data.type.size() < 50 &&
+             data.status in ['Online', 'Offline', 'Starting', 'Stopping'] &&
+             isValidOptionalString('ip', 7, 45) &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
+             data.planId is string && data.planId.size() > 0 && data.planId.size() < 100 &&
+             isValidOptionalString('panelId', 1, 100) &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && 
+                    isValidUser(request.resource.data) && 
+                    isOwner(userId) && 
+                    (request.resource.data.role == 'user' || isAdmin());
+      allow update: if isAuthenticated() && 
+                    isValidUser(request.resource.data) && 
+                    ((isOwner(userId) && request.resource.data.role == resource.data.role && request.resource.data.createdAt == resource.data.createdAt) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /plans/{planId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() && isValidPlan(request.resource.data);
+      allow update: if isAdmin() && isValidPlan(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAdmin();
+    }
+
+    match /servers/{serverId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && 
+                    isValidServer(request.resource.data) && 
+                    (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAuthenticated() && 
+                    isValidServer(request.resource.data) && 
+                    ((isDocOwner() && request.resource.data.userId == resource.data.userId && request.resource.data.createdAt == resource.data.createdAt) || isAdmin());
+      allow delete: if isDocOwner() || isAdmin();
+    }
+  }
+}

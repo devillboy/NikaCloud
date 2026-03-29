@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
-import { ChevronRight, Cpu, Globe, Shield, Zap, Server, Gamepad2, HardDrive, Clock, Disc as Discord, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, Cpu, Globe, Shield, Zap, Server, Gamepad2, HardDrive, Clock, Disc as Discord, CheckCircle2, Gift, Database, ArrowRight } from 'lucide-react';
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Home() {
   return (
@@ -33,13 +34,13 @@ export default function Home() {
               Premium Minecraft and VPS hosting powered by enterprise hardware. Experience zero lag, instant setup, and 24/7 expert support.
             </p>
             <div className="flex flex-wrap items-center gap-4">
-              <a href="#plans" className="px-8 py-4 rounded-xl bg-brand-blue text-white font-semibold hover:bg-blue-600 transition-all flex items-center gap-2 group">
-                View Plans
+              <Link to="/claim-free-server" className="px-8 py-4 rounded-xl bg-brand-blue text-white font-semibold hover:bg-blue-600 transition-all flex items-center gap-2 group shadow-lg shadow-brand-blue/20">
+                <Gift className="w-5 h-5" />
+                Claim Free Server
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </a>
-              <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="px-8 py-4 rounded-xl glass-panel text-white font-semibold hover:bg-slate-800 transition-all flex items-center gap-2">
-                <Discord className="w-5 h-5" />
-                Join Discord
+              </Link>
+              <a href="#plans" className="px-8 py-4 rounded-xl glass-panel text-white font-semibold hover:bg-slate-800 transition-all flex items-center gap-2">
+                View Plans
               </a>
             </div>
           </motion.div>
@@ -107,6 +108,40 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Free Server Banner */}
+      <section className="py-12 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-r from-brand-blue/20 to-brand-purple/20 border border-brand-blue/30 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/20 blur-[100px] rounded-full" />
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/20 text-brand-blue text-sm font-bold uppercase tracking-wider mb-4">
+                <Gift className="w-4 h-4" /> Limited Time Offer
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Get a Free Minecraft Server</h2>
+              <p className="text-slate-300 max-w-xl text-lg mb-6">
+                Start your community today with our powerful free tier. No credit card required. Instant automated setup.
+              </p>
+              <div className="flex flex-wrap gap-4 mb-0">
+                <div className="flex items-center gap-2 text-sm text-slate-300 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-800">
+                  <Cpu className="w-4 h-4 text-brand-blue" /> 100% CPU
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-300 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-800">
+                  <HardDrive className="w-4 h-4 text-brand-blue" /> 5GB RAM
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-300 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-800">
+                  <Database className="w-4 h-4 text-brand-blue" /> 10GB NVMe
+                </div>
+              </div>
+            </div>
+            <div className="relative z-10 shrink-0">
+              <Link to="/claim-free-server" className="bg-white text-brand-blue hover:bg-slate-100 font-bold text-lg px-8 py-4 rounded-xl transition-all shadow-xl shadow-white/10 flex items-center gap-2">
+                Claim Now <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section id="features" className="py-24 relative z-10 bg-slate-900/50 border-y border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -151,45 +186,60 @@ export default function Home() {
                 <Gamepad2 className="w-6 h-6 text-green-500" />
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-white">Minecraft Hosting</h2>
+                <h2 className="text-3xl font-bold text-white">Game Host Plans</h2>
                 <p className="text-slate-400">High-performance servers for your community.</p>
               </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[
-                { name: "Dirt Tier", price: "$4.99", ram: "4GB", slots: "Unlimited", cpu: "Shared" },
-                { name: "Iron Tier", price: "$9.99", ram: "8GB", slots: "Unlimited", cpu: "Dedicated Threads", popular: true },
-                { name: "Diamond Tier", price: "$19.99", ram: "16GB", slots: "Unlimited", cpu: "Dedicated Core" }
+                { name: "Plan 1", price: "₹99", ram: "2 GB", ssd: "8 GB", cpu: "50%", ports: "1", subdomains: "1", backups: "1 Backup" },
+                { name: "Plan 2", price: "₹199", ram: "4 GB", ssd: "15 GB", cpu: "100%", ports: "2", subdomains: "1", backups: "1 Backup" },
+                { name: "Plan 3", price: "₹299", ram: "6 GB", ssd: "25 GB", cpu: "150%", ports: "2", subdomains: "2", backups: "Backups" },
+                { name: "Plan 4", price: "₹399", ram: "8 GB", ssd: "45 GB", cpu: "200%", ports: "3", subdomains: "3", backups: "Backups" },
+                { name: "Plan 5", price: "₹499", ram: "10 GB", ssd: "60 GB", cpu: "300%", ports: "4", subdomains: "4", backups: "Backups" },
+                { name: "Plan 6", price: "₹599", ram: "12 GB", ssd: "80 GB", cpu: "400%", ports: "6", subdomains: "5", backups: "Backups" },
+                { name: "Plan 7", price: "₹699", ram: "16 GB", ssd: "100 GB", cpu: "600%", ports: "8", subdomains: "6", backups: "Backups" },
+                { name: "Plan 8", price: "₹799", ram: "24 GB", ssd: "150 GB", cpu: "850%", ports: "10", subdomains: "10", backups: "Backups", extra: "1 Discord Bot Hosting" },
+                { name: "Plan 9", price: "₹899", ram: "32 GB", ssd: "200 GB", cpu: "1000%", ports: "12", subdomains: "12", backups: "Backups", extra: "2 Discord Bot Hosting" },
+                { name: "Plan 10", price: "₹999", ram: "64 GB", ssd: "400 GB", cpu: "2000%", ports: "24", subdomains: "24", backups: "Backups", extra: "4 Discord Bot Hosting", popular: true }
               ].map((plan, i) => (
-                <div key={i} className={`relative h-full glass-panel p-8 rounded-3xl border ${plan.popular ? 'border-brand-blue shadow-lg shadow-brand-blue/10' : 'border-slate-800'} flex flex-col`}>
+                <div key={i} className={`relative h-full glass-panel p-6 rounded-3xl border ${plan.popular ? 'border-brand-blue shadow-lg shadow-brand-blue/10' : 'border-slate-800'} flex flex-col`}>
                   {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-brand-blue text-white text-xs font-bold uppercase tracking-wider">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-brand-blue text-white text-[10px] font-bold uppercase tracking-wider">
                       Most Popular
                     </div>
                   )}
-                  <h3 className="text-2xl font-bold mb-2 text-white">{plan.name}</h3>
+                  <h3 className="text-xl font-bold mb-1 text-white uppercase tracking-wider">Game Host {plan.name}</h3>
                   <div className="mb-6">
-                    <span className="text-4xl font-bold text-white">{plan.price}</span>
-                    <span className="text-slate-400">/mo</span>
+                    <span className="text-3xl font-bold text-white">{plan.price}</span>
+                    <span className="text-slate-400 text-sm">/mo</span>
                   </div>
                   
-                  <ul className="space-y-4 mb-8 flex-grow">
-                    <li className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="w-5 h-5 text-brand-blue" /> {plan.ram} DDR4 RAM
+                  <ul className="space-y-3 mb-8 flex-grow text-sm">
+                    <li className="flex items-center gap-2 text-slate-300">
+                      <CheckCircle2 className="w-4 h-4 text-brand-blue" /> {plan.ram} RAM
                     </li>
-                    <li className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="w-5 h-5 text-brand-blue" /> 50GB NVMe SSD
+                    <li className="flex items-center gap-2 text-slate-300">
+                      <CheckCircle2 className="w-4 h-4 text-brand-blue" /> {plan.ssd} NVMe SSD
                     </li>
-                    <li className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="w-5 h-5 text-brand-blue" /> {plan.cpu}
+                    <li className="flex items-center gap-2 text-slate-300">
+                      <CheckCircle2 className="w-4 h-4 text-brand-blue" /> {plan.cpu} CPU
                     </li>
-                    <li className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="w-5 h-5 text-brand-blue" /> DDoS Protection
+                    <li className="flex items-center gap-2 text-slate-300">
+                      <CheckCircle2 className="w-4 h-4 text-brand-blue" /> {plan.ports} Ports • {plan.subdomains} Subdomain
                     </li>
+                    <li className="flex items-center gap-2 text-slate-300">
+                      <CheckCircle2 className="w-4 h-4 text-brand-blue" /> {plan.backups}
+                    </li>
+                    {plan.extra && (
+                      <li className="flex items-center gap-2 text-brand-blue font-medium mt-2">
+                        <Gift className="w-4 h-4" /> {plan.extra}
+                      </li>
+                    )}
                   </ul>
                   
-                  <button className={`w-full py-3 rounded-xl font-semibold transition-all ${plan.popular ? 'bg-brand-blue hover:bg-blue-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
+                  <button className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${plan.popular ? 'bg-brand-blue hover:bg-blue-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
                     Order Now
                   </button>
                 </div>
