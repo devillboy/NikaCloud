@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 export default function Footer() {
   const location = useLocation();
-  const isAdmin = location.pathname.startsWith('/admin');
+  const isAdmin = location.pathname.startsWith('/admin') || location.pathname === '/login';
 
   if (isAdmin) return null;
 
