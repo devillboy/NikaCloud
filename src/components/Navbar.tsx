@@ -19,8 +19,8 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-3 group">
             {/* Logo */}
             <img src="/logo.png" alt="NikaCloud Logo" className="w-12 h-12 object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
-            <span className="font-display font-bold text-3xl tracking-tighter text-white [text-shadow:_0_2px_10px_rgb(59_130_246_/_0.5)]">
-              Nika<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-blue-400">Cloud</span>
+            <span className="font-display font-bold text-3xl tracking-tighter text-white">
+              Nika<span className="text-fiery-gradient">Cloud</span>
             </span>
           </Link>
 
@@ -38,7 +38,7 @@ export default function Navbar() {
                     <motion.button 
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-blue hover:bg-blue-600 text-white text-sm font-medium transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-fiery-gradient hover:opacity-90 text-white text-sm font-medium transition-colors"
                     >
                       <LayoutDashboard className="w-4 h-4" />
                       Admin Portal
@@ -49,7 +49,7 @@ export default function Navbar() {
                     <motion.button 
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-blue hover:bg-blue-600 text-white text-sm font-medium transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-fiery-gradient hover:opacity-90 text-white text-sm font-medium transition-colors"
                     >
                       <LayoutDashboard className="w-4 h-4" />
                       Dashboard
@@ -59,7 +59,7 @@ export default function Navbar() {
                 {user?.photoURL ? (
                   <img src={user.photoURL} alt="User" className="w-10 h-10 rounded-full object-cover border border-white/10" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold">
+                  <div className="w-10 h-10 rounded-full bg-fiery-gradient flex items-center justify-center text-white font-bold">
                     {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
                   </div>
                 )}
@@ -72,7 +72,7 @@ export default function Navbar() {
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-blue hover:bg-blue-600 text-white text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-fiery-gradient hover:opacity-90 text-white text-sm font-medium transition-colors"
                 >
                   <LayoutDashboard className="w-4 h-4" />
                   Client Area
@@ -106,12 +106,12 @@ export default function Navbar() {
             {user ? (
               <>
                 {isAdmin ? (
-                  <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-blue hover:bg-blue-600 text-white font-medium">
+                  <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-fiery-gradient hover:opacity-90 text-white font-medium">
                     <LayoutDashboard className="w-5 h-5" />
                     Admin Portal
                   </Link>
                 ) : (
-                  <Link to="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-blue hover:bg-blue-600 text-white font-medium">
+                  <Link to="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-fiery-gradient hover:opacity-90 text-white font-medium">
                     <LayoutDashboard className="w-5 h-5" />
                     Dashboard
                   </Link>
@@ -122,7 +122,7 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <Link to="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-blue hover:bg-blue-600 text-white font-medium">
+              <Link to="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-fiery-gradient hover:opacity-90 text-white font-medium">
                 <LayoutDashboard className="w-5 h-5" />
                 Client Area
               </Link>

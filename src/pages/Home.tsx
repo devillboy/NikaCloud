@@ -20,8 +20,8 @@ export default function Home() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-left"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/10 border border-brand-blue/20 mb-6 text-brand-blue">
-              <span className="flex h-2 w-2 rounded-full bg-brand-blue animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-accent/10 border border-brand-accent/20 mb-6 text-brand-accent">
+              <span className="flex h-2 w-2 rounded-full bg-brand-accent animate-pulse" />
               <span className="text-xs font-semibold uppercase tracking-wider">Enterprise-Grade Infrastructure</span>
             </div>
             <motion.h1 
@@ -31,7 +31,7 @@ export default function Home() {
               className="text-6xl lg:text-8xl font-bold tracking-tighter mb-8 leading-[0.9] text-white"
             >
               Next-Gen <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue via-blue-400 to-purple-400">
+              <span className="text-fiery-gradient">
                 Cloud Hosting
               </span>
             </motion.h1>
@@ -49,7 +49,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="flex flex-wrap items-center gap-6"
             >
-              <Link to="/claim-free-server" className="px-10 py-5 rounded-full bg-brand-blue text-white font-bold hover:bg-blue-600 transition-all flex items-center gap-3 group shadow-2xl shadow-brand-blue/30">
+              <Link to="/claim-free-server" className="px-10 py-5 rounded-full bg-fiery-gradient text-white font-bold hover:opacity-90 transition-all flex items-center gap-3 group shadow-2xl shadow-brand-accent/30">
                 <Gift className="w-5 h-5" />
                 Claim Free Server
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -70,8 +70,8 @@ export default function Home() {
             <div className="w-full h-full flex items-center justify-center">
               <div className="relative w-full max-w-md glass-panel rounded-2xl p-8 flex flex-col justify-between overflow-hidden shadow-2xl">
                 <div className="flex justify-between items-start mb-8">
-                  <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center border border-brand-blue/20">
-                    <Server className="w-6 h-6 text-brand-blue" />
+                  <div className="w-12 h-12 rounded-xl bg-brand-accent/10 flex items-center justify-center border border-brand-accent/20">
+                    <Server className="w-6 h-6 text-brand-accent" />
                   </div>
                   <div className="px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-400"></span>
@@ -90,7 +90,7 @@ export default function Home() {
                         initial={{ width: "0%" }}
                         animate={{ width: "45%" }}
                         transition={{ duration: 1.5, delay: 0.5 }}
-                        className="h-full bg-brand-blue" 
+                        className="h-full bg-fiery-gradient" 
                       />
                     </div>
                   </div>
@@ -104,7 +104,7 @@ export default function Home() {
                         initial={{ width: "0%" }}
                         animate={{ width: "44%" }}
                         transition={{ duration: 1.5, delay: 0.7 }}
-                        className="h-full bg-brand-blue" 
+                        className="h-full bg-fiery-gradient" 
                       />
                     </div>
                   </div>
@@ -112,7 +112,7 @@ export default function Home() {
 
                 <div className="pt-6 mt-6 border-t border-slate-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-brand-blue" />
+                    <Shield className="w-4 h-4 text-brand-accent" />
                     <span className="text-sm text-slate-300">DDoS Protection Active</span>
                   </div>
                   <span className="text-xs text-slate-500 font-mono">NIKA-US-EAST-1</span>
@@ -126,10 +126,10 @@ export default function Home() {
       {/* Free Server Banner */}
       <section className="py-12 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-brand-blue/20 to-brand-purple/20 border border-brand-blue/30 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/20 blur-[100px] rounded-full" />
+            <div className="bg-gradient-to-r from-brand-accent/20 to-brand-accent-light/20 border border-brand-accent/30 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/20 blur-[100px] rounded-full" />
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/20 text-brand-blue text-sm font-bold uppercase tracking-wider mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-accent/20 text-brand-accent text-sm font-bold uppercase tracking-wider mb-4">
                 <Gift className="w-4 h-4" /> Limited Time Offer
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Get a Free Minecraft Server</h2>
@@ -138,18 +138,18 @@ export default function Home() {
               </p>
               <div className="flex flex-wrap gap-4 mb-0">
                 <div className="flex items-center gap-2 text-sm text-slate-300 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-800">
-                  <Cpu className="w-4 h-4 text-brand-blue" /> 100% CPU
+                  <Cpu className="w-4 h-4 text-brand-accent" /> 100% CPU
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-300 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-800">
-                  <HardDrive className="w-4 h-4 text-brand-blue" /> 5GB RAM
+                  <HardDrive className="w-4 h-4 text-brand-accent" /> 5GB RAM
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-300 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-800">
-                  <Database className="w-4 h-4 text-brand-blue" /> 10GB NVMe
+                  <Database className="w-4 h-4 text-brand-accent" /> 10GB NVMe
                 </div>
               </div>
             </div>
             <div className="relative z-10 shrink-0">
-              <Link to="/claim-free-server" className="bg-white text-brand-blue hover:bg-slate-100 font-bold text-lg px-8 py-4 rounded-xl transition-all shadow-xl shadow-white/10 flex items-center gap-2">
+              <Link to="/claim-free-server" className="bg-white text-brand-accent hover:bg-slate-100 font-bold text-lg px-8 py-4 rounded-xl transition-all shadow-xl shadow-white/10 flex items-center gap-2">
                 Claim Now <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
@@ -179,8 +179,8 @@ export default function Home() {
                 transition={{ delay: i * 0.1 }}
                 className="glass-panel p-8 rounded-2xl hover:bg-slate-800/50 transition-colors"
               >
-                <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center mb-6">
-                  <feature.icon className="w-6 h-6 text-brand-blue" />
+                <div className="w-12 h-12 rounded-xl bg-brand-accent/10 flex items-center justify-center mb-6">
+                  <feature.icon className="w-6 h-6 text-brand-accent" />
                 </div>
                 <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
                 <p className="text-slate-400 leading-relaxed">{feature.desc}</p>
@@ -221,7 +221,7 @@ export default function Home() {
               ].map((plan, i) => (
                 <div key={i} className={`relative h-full glass-panel p-6 rounded-3xl border ${plan.popular ? 'border-brand-blue shadow-lg shadow-brand-blue/10' : 'border-slate-800'} flex flex-col`}>
                   {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-brand-blue text-white text-[10px] font-bold uppercase tracking-wider">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-brand-accent text-white text-[10px] font-bold uppercase tracking-wider">
                       Most Popular
                     </div>
                   )}
@@ -233,28 +233,28 @@ export default function Home() {
                   
                   <ul className="space-y-3 mb-8 flex-grow text-sm">
                     <li className="flex items-center gap-2 text-slate-300">
-                      <CheckCircle2 className="w-4 h-4 text-brand-blue" /> {plan.ram} RAM
+                      <CheckCircle2 className="w-4 h-4 text-brand-accent" /> {plan.ram} RAM
                     </li>
                     <li className="flex items-center gap-2 text-slate-300">
-                      <CheckCircle2 className="w-4 h-4 text-brand-blue" /> {plan.ssd} NVMe SSD
+                      <CheckCircle2 className="w-4 h-4 text-brand-accent" /> {plan.ssd} NVMe SSD
                     </li>
                     <li className="flex items-center gap-2 text-slate-300">
-                      <CheckCircle2 className="w-4 h-4 text-brand-blue" /> {plan.cpu} CPU
+                      <CheckCircle2 className="w-4 h-4 text-brand-accent" /> {plan.cpu} CPU
                     </li>
                     <li className="flex items-center gap-2 text-slate-300">
-                      <CheckCircle2 className="w-4 h-4 text-brand-blue" /> {plan.ports} Ports • {plan.subdomains} Subdomain
+                      <CheckCircle2 className="w-4 h-4 text-brand-accent" /> {plan.ports} Ports • {plan.subdomains} Subdomain
                     </li>
                     <li className="flex items-center gap-2 text-slate-300">
-                      <CheckCircle2 className="w-4 h-4 text-brand-blue" /> {plan.backups}
+                      <CheckCircle2 className="w-4 h-4 text-brand-accent" /> {plan.backups}
                     </li>
                     {plan.extra && (
-                      <li className="flex items-center gap-2 text-brand-blue font-medium mt-2">
+                      <li className="flex items-center gap-2 text-brand-accent font-medium mt-2">
                         <Gift className="w-4 h-4" /> {plan.extra}
                       </li>
                     )}
                   </ul>
                   
-                  <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all text-center ${plan.popular ? 'bg-brand-blue hover:bg-blue-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
+                  <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all text-center ${plan.popular ? 'bg-fiery-gradient hover:opacity-90 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
                     Order Now
                   </a>
                   <p className="text-xs text-slate-500 mt-3 text-center">Click to open a ticket on Discord to purchase.</p>
@@ -325,13 +325,13 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-24 relative z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl overflow-hidden bg-brand-blue p-12 text-center">
+          <div className="relative rounded-3xl overflow-hidden bg-fiery-gradient p-12 text-center">
             <div className="relative z-10">
               <h2 className="text-4xl font-bold mb-6 text-white">Ready to start your journey?</h2>
-              <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+              <p className="text-xl text-orange-100 mb-8 max-w-2xl mx-auto">
                 Join our Discord community to get exclusive discounts, participate in giveaways, and chat with our support team.
               </p>
-              <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-white hover:bg-slate-100 text-brand-blue font-bold text-lg transition-colors">
+              <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-white hover:bg-slate-100 text-brand-accent font-bold text-lg transition-colors">
                 <Discord className="w-6 h-6" />
                 Join NikaCloud Discord
               </a>

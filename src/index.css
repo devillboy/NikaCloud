@@ -4,7 +4,8 @@
 @theme {
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   
-  --color-brand-blue: #3b82f6;
+  --color-brand-accent: #FF4500; /* Fiery Orange-Red */
+  --color-brand-accent-light: #FFD700; /* Gold/Yellow */
   --color-brand-dark: #050505;
   --color-brand-darker: #000000;
   --color-brand-card: #111111;
@@ -20,6 +21,12 @@
   .glass-panel {
     @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
   }
+  .text-fiery-gradient {
+    @apply bg-gradient-to-r from-brand-accent-light to-brand-accent bg-clip-text text-transparent;
+  }
+  .bg-fiery-gradient {
+    @apply bg-gradient-to-r from-brand-accent to-brand-accent-light;
+  }
 }
 
 /* Custom scrollbar */
@@ -34,5 +41,5 @@
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #555555;
+  background: #FF4500;
 }
