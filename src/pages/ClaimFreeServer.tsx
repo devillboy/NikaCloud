@@ -21,17 +21,26 @@ export default function ClaimFreeServer() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [selectedEgg, setSelectedEgg] = useState(EGGS[1].id); // Default to Paper
+  const [serverName, setServerName] = useState('');
   const [credentials, setCredentials] = useState<{username: string, password: string, panelUrl: string} | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login');
+    } else if (!loading && user && hasClaimedFreeServer && !success) {
+      navigate('/dashboard');
+    } else if (user && !serverName) {
+      setServerName(`${user.displayName || user.email?.split('@')[0]}'s Server`);
     }
-  }, [user, loading, navigate]);
+  }, [user, hasClaimedFreeServer, loading, navigate, success]);
 
   const handleClaim = async () => {
     if (!user) return;
+    if (!serverName.trim()) {
+      setError("Please enter a server name");
+      return;
+    }
     
     setClaiming(true);
     setError(null);
@@ -45,7 +54,8 @@ export default function ClaimFreeServer() {
         body: JSON.stringify({
           userId: user.uid,
           email: user.email,
-          eggId: selectedEgg
+          eggId: selectedEgg,
+          serverName: serverName.trim()
         }),
       });
 
@@ -177,7 +187,21 @@ export default function ClaimFreeServer() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div className="bg-slate-900/50 rounded-2xl p-6 border border-slate-800">
-                  <h3 className="text-lg font-semibold text-white mb-4">Server Specifications</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">Server Details</h3>
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-slate-400 mb-2">
+                      Server Name
+                    </label>
+                    <input
+                      type="text"
+                      value={serverName}
+                      onChange={(e) => setServerName(e.target.value)}
+                      placeholder="My Awesome Server"
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                      maxLength={30}
+                    />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-4">Specifications</h3>
                   <ul className="space-y-3">
                     <li className="flex items-center gap-3 text-slate-300">
                       <CheckCircle2 className="w-5 h-5 text-brand-blue" /> 

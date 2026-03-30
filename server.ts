@@ -13,14 +13,16 @@ async function startServer() {
   // API routes
   app.post("/api/servers/create-free", async (req, res) => {
     try {
-      const { userId, eggId = 1 } = req.body;
+      const { userId, eggId = 1, serverName } = req.body;
       const email = req.body.email?.toLowerCase();
 
       if (!userId || !email) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-      console.log(`Creating free server for user ${userId} (${email}) with Egg ID ${eggId}`);
+      const finalServerName = serverName || `${email.split('@')[0]}'s Free Server`;
+
+      console.log(`Creating free server for user ${userId} (${email}) with Egg ID ${eggId} and Name ${finalServerName}`);
       
       const PANEL_URL = process.env.PANEL_URL || 'https://gp.nikacloud.in';
       const API_KEY = process.env.PANEL_API_KEY || 'ptla_IoPnRywiup4TOqKlugmFv22IhSrbNOqOgT9E2OrQTY3';
@@ -35,6 +37,7 @@ async function startServer() {
       let generatedPassword = Math.random().toString(36).slice(-10); // Random password
       let panelUsername = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 1000);
       let isNewPanelUser = false;
+      let finalPassword = generatedPassword;
 
       const userRes = await fetch(`${PANEL_URL}/api/application/users?filter[email]=${email}`, {
         headers: { 
@@ -49,6 +52,22 @@ async function startServer() {
         panelUserId = userData.data[0].attributes.id;
         panelUsername = userData.data[0].attributes.username;
         console.log(`Found existing panel user: ${panelUserId}`);
+        
+        // Check if this user already has a server
+        const userServersRes = await fetch(`${PANEL_URL}/api/application/users/${panelUserId}?include=servers`, {
+          headers: { 
+            'Authorization': `Bearer ${API_KEY}`, 
+            'Accept': 'application/json' 
+          }
+        });
+        const userServersData = await userServersRes.json();
+        const serversCount = userServersData.attributes?.relationships?.servers?.data?.length || 0;
+        
+        if (serversCount > 0) {
+          return res.status(403).json({ error: "You have already claimed a free server. Limit is 1 per user." });
+        }
+
+        finalPassword = "Use your existing panel password. If forgotten, use the 'Forgot Password' link on the panel.";
       } else {
         console.log(`Creating new panel user for ${email}`);
         isNewPanelUser = true;
@@ -74,6 +93,7 @@ async function startServer() {
           throw new Error(`Failed to create panel user: ${JSON.stringify(createUserData.errors?.[0]?.detail || 'Unknown error')}`);
         }
         panelUserId = createUserData.attributes.id;
+        finalPassword = generatedPassword;
       }
 
       // 2. Create the Server on the Panel
@@ -151,7 +171,7 @@ async function startServer() {
           'Content-Type': 'application/json' 
         },
         body: JSON.stringify({
-          name: `${email.split('@')[0]}'s Free Server`,
+          name: finalServerName,
           user: panelUserId,
           egg: parseInt(eggId), // Use the selected Egg ID
           docker_image: docker_image,
@@ -192,7 +212,7 @@ async function startServer() {
         credentials: {
           panelUrl: PANEL_URL,
           username: panelUsername,
-          password: isNewPanelUser ? generatedPassword : "Your existing panel password",
+          password: finalPassword,
           isNewUser: isNewPanelUser
         },
         serverDetails: {
