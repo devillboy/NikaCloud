@@ -13,20 +13,28 @@ import {
   ChevronRight,
   Cloud,
   Edit2,
-  Plus
+  Plus,
+  X,
+  Menu,
+  Trash2,
+  Cpu,
+  Globe,
+  Shield
 } from 'lucide-react';
 import { Link, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (open: boolean) => void }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
   
   const links = [
     { icon: LayoutDashboard, label: 'Analytics', path: '/admin' },
-    { icon: Server, label: 'Plan Management', path: '/admin/plans' },
+    { icon: Server, label: 'Servers', path: '/admin/servers' },
+    { icon: CreditCard, label: 'Plans', path: '/admin/plans' },
     { icon: Users, label: 'Users', path: '/admin/users' },
+    { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
 
@@ -36,54 +44,68 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 h-screen bg-brand-card border-r border-slate-800 flex flex-col fixed left-0 top-0">
-      <div className="h-20 flex items-center px-6 border-b border-slate-800">
-        <Link to="/" className="flex items-center gap-2">
-          <Cloud className="w-6 h-6 text-brand-blue" />
-          <span className="font-bold text-xl text-white">NikaCloud</span>
-        </Link>
-      </div>
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div className="fixed inset-0 bg-black/50 z-20 md:hidden" onClick={() => setIsOpen(false)} />
+      )}
       
-      <div className="flex-1 py-6 px-4 space-y-2">
-        {links.map((link) => {
-          const isActive = location.pathname === link.path;
-          return (
-            <Link 
-              key={link.path} 
-              to={link.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                isActive 
-                  ? 'bg-brand-blue/10 text-brand-blue border border-brand-blue/20' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-              }`}
-            >
-              <link.icon className="w-5 h-5" />
-              <span className="font-medium">{link.label}</span>
-            </Link>
-          );
-        })}
-      </div>
+      <div className={`fixed inset-y-0 left-0 z-30 w-64 bg-brand-card border-r border-slate-800 flex flex-col transform transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="h-20 flex items-center justify-between px-6 border-b border-slate-800">
+          <Link to="/" className="flex items-center gap-2">
+            <Cloud className="w-6 h-6 text-brand-blue" />
+            <span className="font-bold text-xl text-white">NikaCloud</span>
+          </Link>
+          <button className="md:hidden text-slate-400" onClick={() => setIsOpen(false)}>
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        
+        <div className="flex-1 py-6 px-4 space-y-2">
+          {links.map((link) => {
+            const isActive = location.pathname === link.path;
+            return (
+              <Link 
+                key={link.path} 
+                to={link.path}
+                onClick={() => setIsOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                  isActive 
+                    ? 'bg-brand-blue/10 text-brand-blue border border-brand-blue/20' 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                }`}
+              >
+                <link.icon className="w-5 h-5" />
+                <span className="font-medium">{link.label}</span>
+              </Link>
+            );
+          })}
+        </div>
 
-      <div className="p-4 border-t border-slate-800">
-        <button 
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-colors"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="font-medium">Logout</span>
-        </button>
+        <div className="p-4 border-t border-slate-800">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-400/10 transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Logout</span>
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
-const Topbar = () => {
+const Topbar = ({ toggleSidebar }: { toggleSidebar: () => void }) => {
   const { user } = useAuth();
   
   return (
-    <header className="h-20 bg-brand-darker border-b border-slate-800 flex items-center justify-between px-8 sticky top-0 z-10">
+    <header className="h-20 bg-brand-darker border-b border-slate-800 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10">
       <div className="flex items-center gap-4 flex-1">
-        <div className="relative w-96">
+        <button className="md:hidden text-slate-400" onClick={toggleSidebar}>
+          <Menu className="w-6 h-6" />
+        </button>
+        <div className="relative w-full md:w-96">
           <Search className="w-5 h-5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
           <input 
             type="text" 
@@ -117,7 +139,7 @@ const Topbar = () => {
 };
 
 import { useState, useEffect } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const Analytics = () => {
@@ -243,13 +265,156 @@ const Analytics = () => {
   );
 };
 
+const UserManagement = () => {
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const usersList = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setUsers(usersList);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  return (
+    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-white mb-2">User Management</h1>
+        <p className="text-slate-400">Manage user accounts, permissions, and status.</p>
+      </div>
+
+      <div className="glass-panel rounded-xl overflow-hidden overflow-x-auto">
+        <table className="w-full text-left border-collapse min-w-[600px]">
+          <thead>
+            <tr className="border-b border-slate-800 bg-slate-900/50">
+              <th className="p-4 text-sm font-medium text-slate-400">User</th>
+              <th className="p-4 text-sm font-medium text-slate-400">Email</th>
+              <th className="p-4 text-sm font-medium text-slate-400">Role</th>
+              <th className="p-4 text-sm font-medium text-slate-400 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={4} className="p-4 text-center text-slate-400">Loading users...</td></tr>
+            ) : users.map(user => (
+              <tr key={user.id} className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors">
+                <td className="p-4 text-white font-medium">{user.displayName || 'N/A'}</td>
+                <td className="p-4 text-slate-300">{user.email}</td>
+                <td className="p-4 text-slate-300">{user.role || 'User'}</td>
+                <td className="p-4 text-right">
+                  <button className="text-slate-400 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-red-400/10">
+                    Suspend
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const ServerManagement = () => {
+  const [servers, setServers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchServers = async () => {
+      try {
+        const serversSnapshot = await getDocs(collection(db, 'servers'));
+        const serversList = serversSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setServers(serversList);
+      } catch (error) {
+        console.error("Error fetching servers:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchServers();
+  }, []);
+
+  const handlePowerAction = async (id: string, signal: string) => {
+    try {
+      const response = await fetch(`/api/servers/${id}/power`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signal })
+      });
+      const data = await response.json();
+      alert(data.message || `Signal ${signal} sent`);
+    } catch (error) {
+      console.error(`Error sending ${signal} signal:`, error);
+      alert(`Failed to send ${signal} signal`);
+    }
+  };
+
+  const handleDeleteServer = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this server?')) {
+      try {
+        await deleteDoc(doc(db, 'servers', id));
+        setServers(servers.filter(s => s.id !== id));
+        alert('Server deleted successfully');
+      } catch (error) {
+        console.error('Error deleting server:', error);
+        alert('Failed to delete server');
+      }
+    }
+  };
+
+  return (
+    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-white mb-2">Server Management</h1>
+        <p className="text-slate-400">Manage your deployed servers.</p>
+      </div>
+
+      <div className="glass-panel rounded-xl overflow-hidden overflow-x-auto">
+        <table className="w-full text-left border-collapse min-w-[600px]">
+          <thead>
+            <tr className="border-b border-slate-800 bg-slate-900/50">
+              <th className="p-4 text-sm font-medium text-slate-400">Server Name</th>
+              <th className="p-4 text-sm font-medium text-slate-400">Status</th>
+              <th className="p-4 text-sm font-medium text-slate-400 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={3} className="p-4 text-center text-slate-400">Loading servers...</td></tr>
+            ) : servers.map(server => (
+              <tr key={server.id} className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors">
+                <td className="p-4 text-white font-medium">{server.name}</td>
+                <td className="p-4 text-slate-300">{server.status || 'Unknown'}</td>
+                <td className="p-4 text-right space-x-2">
+                  <button onClick={() => handlePowerAction(server.id, 'start')} className="text-green-400 hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-400/10">Start</button>
+                  <button onClick={() => handlePowerAction(server.id, 'stop')} className="text-yellow-400 hover:text-yellow-300 transition-colors p-2 rounded-lg hover:bg-yellow-400/10">Stop</button>
+                  <button onClick={() => handlePowerAction(server.id, 'restart')} className="text-blue-400 hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-400/10">Restart</button>
+                  <button onClick={() => handleDeleteServer(server.id)} className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"><Trash2 className="w-4 h-4" /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
 const PlanManagement = () => {
   const plans = [
-    { id: 1, name: 'Dirt Tier', type: 'Minecraft', price: 4.99, ram: '4GB', status: 'Active' },
-    { id: 2, name: 'Iron Tier', type: 'Minecraft', price: 9.99, ram: '8GB', status: 'Active' },
-    { id: 3, name: 'Diamond Tier', type: 'Minecraft', price: 19.99, ram: '16GB', status: 'Active' },
-    { id: 4, name: 'Starter VM', type: 'VPS', price: 5.00, ram: '2GB', status: 'Active' },
-    { id: 5, name: 'Pro VM', type: 'VPS', price: 12.00, ram: '8GB', status: 'Active' },
+    { id: 1, name: 'Dirt Tier', type: 'Minecraft', price: 4.99, ram: '4GB', status: 'Active', icon: Server },
+    { id: 2, name: 'Iron Tier', type: 'Minecraft', price: 9.99, ram: '8GB', status: 'Active', icon: Cpu },
+    { id: 3, name: 'Diamond Tier', type: 'Minecraft', price: 19.99, ram: '16GB', status: 'Active', icon: Shield },
+    { id: 4, name: 'Starter VM', type: 'VPS', price: 5.00, ram: '2GB', status: 'Active', icon: Globe },
+    { id: 5, name: 'Pro VM', type: 'VPS', price: 12.00, ram: '8GB', status: 'Active', icon: Server },
   ];
 
   return (
@@ -280,7 +445,10 @@ const PlanManagement = () => {
           <tbody>
             {plans.map(plan => (
               <tr key={plan.id} className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors">
-                <td className="p-4 text-white font-medium">{plan.name}</td>
+                <td className="p-4 text-white font-medium flex items-center gap-3">
+                  <plan.icon className="w-5 h-5 text-brand-blue" />
+                  {plan.name}
+                </td>
                 <td className="p-4">
                   <span className={`px-2 py-1 rounded text-xs font-medium ${plan.type === 'Minecraft' ? 'bg-green-500/10 text-green-400' : 'bg-purple-500/10 text-purple-400'}`}>
                     {plan.type}
@@ -307,11 +475,57 @@ const PlanManagement = () => {
   );
 };
 
+const NotificationSender = () => {
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+
+  const handleSend = async () => {
+    // In a real app, this would call your backend to send the notification
+    alert(`Notification sent: ${title} - ${body}`);
+  };
+
+  return (
+    <div className="p-8 max-w-2xl mx-auto glass-panel rounded-2xl">
+      <h2 className="text-xl font-bold text-white mb-6">Send Push Notification</h2>
+      <div className="space-y-4">
+        <input 
+          type="text" 
+          placeholder="Title" 
+          value={title} 
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white"
+        />
+        <textarea 
+          placeholder="Body" 
+          value={body} 
+          onChange={(e) => setBody(e.target.value)}
+          className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white h-32"
+        />
+        <button onClick={handleSend} className="w-full bg-brand-blue hover:bg-blue-600 text-white p-3 rounded-xl font-medium">
+          Send Notification
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const SettingsPage = () => {
+  return (
+    <div className="p-8 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold text-white mb-6">System Settings</h1>
+      <div className="glass-panel rounded-2xl p-6">
+        <p className="text-slate-400">General system configuration settings will appear here.</p>
+      </div>
+    </div>
+  );
+};
+
 export default function AdminDashboard() {
   const { user, isAdmin, loading } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) {
-    return <div className="min-h-screen bg-brand-darker flex items-center justify-center text-white">Loading...</div>;
+    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Loading...</div>;
   }
 
   if (!user || !isAdmin) {
@@ -319,16 +533,18 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="flex-1 bg-brand-darker flex">
-      <Sidebar />
-      <div className="flex-1 ml-64 flex flex-col">
-        <Topbar />
-        <main className="flex-1 overflow-auto">
+    <div className="min-h-screen bg-slate-950 flex">
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className="flex-1 flex flex-col md:ml-64">
+        <Topbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <main className="flex-1 overflow-auto p-6 bg-slate-950">
           <Routes>
             <Route path="/" element={<Analytics />} />
+            <Route path="/servers" element={<ServerManagement />} />
             <Route path="/plans" element={<PlanManagement />} />
-            <Route path="/users" element={<div className="p-8 text-slate-400">Users Management (Coming Soon)</div>} />
-            <Route path="/settings" element={<div className="p-8 text-slate-400">Settings Page (Coming Soon)</div>} />
+            <Route path="/users" element={<UserManagement />} />
+            <Route path="/notifications" element={<NotificationSender />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </main>
       </div>

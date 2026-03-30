@@ -16,15 +16,11 @@ export default function Navbar() {
     <nav className="fixed w-full z-50 top-0 transition-all duration-300 glass-panel border-b-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-brand-blue to-brand-purple p-0.5">
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-blue to-brand-purple blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
-              <div className="relative w-full h-full bg-brand-darker rounded-lg flex items-center justify-center">
-                <Cloud className="w-5 h-5 text-white" />
-              </div>
-            </div>
-            <span className="font-display font-bold text-2xl tracking-tight text-white">
-              Nika<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-brand-purple">Cloud</span>
+          <Link to="/" className="flex items-center gap-3 group">
+            {/* Logo */}
+            <img src="/logo.png" alt="NikaCloud Logo" className="w-12 h-12 object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
+            <span className="font-display font-bold text-3xl tracking-tighter text-white [text-shadow:_0_2px_10px_rgb(59_130_246_/_0.5)]">
+              Nika<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-blue-400">Cloud</span>
             </span>
           </Link>
 
@@ -59,6 +55,13 @@ export default function Navbar() {
                       Dashboard
                     </motion.button>
                   </Link>
+                )}
+                {user?.photoURL ? (
+                  <img src={user.photoURL} alt="User" className="w-10 h-10 rounded-full object-cover border border-white/10" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold">
+                    {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                  </div>
                 )}
                 <button onClick={() => logout()} className="text-gray-300 hover:text-white transition-colors">
                   <LogOut className="w-5 h-5" />

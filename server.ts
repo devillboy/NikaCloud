@@ -63,8 +63,8 @@ async function startServer() {
         const userServersData = await userServersRes.json();
         const serversCount = userServersData.attributes?.relationships?.servers?.data?.length || 0;
         
-        if (serversCount > 0) {
-          return res.status(403).json({ error: "You have already claimed a free server. Limit is 1 per user." });
+        if (serversCount >= 2) {
+          return res.status(403).json({ error: "You have already claimed the maximum of 2 free servers." });
         }
 
         finalPassword = "Use your existing panel password. If forgotten, use the 'Forgot Password' link on the panel.";

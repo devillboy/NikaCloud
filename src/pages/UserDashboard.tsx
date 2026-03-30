@@ -102,7 +102,7 @@ export default function UserDashboard() {
             <Server className="w-16 h-16 text-slate-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No servers found</h3>
             <p className="text-slate-400 mb-6">You don't have any active servers yet.</p>
-            {!hasClaimedFreeServer ? (
+            {servers.length < 2 ? (
               <button 
                 onClick={() => navigate('/claim-free-server')}
                 className="px-6 py-3 bg-brand-blue hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
@@ -111,7 +111,7 @@ export default function UserDashboard() {
               </button>
             ) : (
               <div className="inline-block px-6 py-3 bg-slate-800 text-slate-400 rounded-xl font-medium border border-slate-700">
-                You have already claimed your free server.
+                You have already claimed your maximum of 2 free servers.
               </div>
             )}
           </motion.div>

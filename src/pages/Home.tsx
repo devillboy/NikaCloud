@@ -24,25 +24,40 @@ export default function Home() {
               <span className="flex h-2 w-2 rounded-full bg-brand-blue animate-pulse" />
               <span className="text-xs font-semibold uppercase tracking-wider">Enterprise-Grade Infrastructure</span>
             </div>
-            <h1 className="text-5xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight text-white">
-              High-Performance <br />
-              <span className="text-brand-blue">
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="text-6xl lg:text-8xl font-bold tracking-tighter mb-8 leading-[0.9] text-white"
+            >
+              Next-Gen <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue via-blue-400 to-purple-400">
                 Cloud Hosting
               </span>
-            </h1>
-            <p className="text-lg text-slate-400 mb-8 max-w-xl leading-relaxed">
-              Premium Minecraft and VPS hosting powered by enterprise hardware. Experience zero lag, instant setup, and 24/7 expert support.
-            </p>
-            <div className="flex flex-wrap items-center gap-4">
-              <Link to="/claim-free-server" className="px-8 py-4 rounded-xl bg-brand-blue text-white font-semibold hover:bg-blue-600 transition-all flex items-center gap-2 group shadow-lg shadow-brand-blue/20">
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="text-xl text-slate-400 mb-10 max-w-xl leading-relaxed"
+            >
+              Experience the pinnacle of performance. Enterprise-grade hardware, zero-lag infrastructure, and professional-grade support.
+            </motion.p>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-wrap items-center gap-6"
+            >
+              <Link to="/claim-free-server" className="px-10 py-5 rounded-full bg-brand-blue text-white font-bold hover:bg-blue-600 transition-all flex items-center gap-3 group shadow-2xl shadow-brand-blue/30">
                 <Gift className="w-5 h-5" />
                 Claim Free Server
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <a href="#plans" className="px-8 py-4 rounded-xl glass-panel text-white font-semibold hover:bg-slate-800 transition-all flex items-center gap-2">
-                View Plans
+              <a href="#plans" className="px-10 py-5 rounded-full glass-panel text-white font-bold hover:bg-white/10 transition-all flex items-center gap-2">
+                Explore Plans
               </a>
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Professional Hero Element */}
@@ -239,9 +254,10 @@ export default function Home() {
                     )}
                   </ul>
                   
-                  <button className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${plan.popular ? 'bg-brand-blue hover:bg-blue-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
+                  <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all text-center ${plan.popular ? 'bg-brand-blue hover:bg-blue-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
                     Order Now
-                  </button>
+                  </a>
+                  <p className="text-xs text-slate-500 mt-3 text-center">Click to open a ticket on Discord to purchase.</p>
                 </div>
               ))}
             </div>
@@ -261,9 +277,11 @@ export default function Home() {
 
             <div className="grid md:grid-cols-3 gap-8">
               {[
-                { name: "Starter VM", price: "$5.00", cores: "2 vCores", ram: "2GB", storage: "40GB NVMe" },
-                { name: "Pro VM", price: "$12.00", cores: "4 vCores", ram: "8GB", storage: "100GB NVMe", popular: true },
-                { name: "Ultra VM", price: "$24.00", cores: "8 vCores", ram: "16GB", storage: "250GB NVMe" }
+                { name: "VPS HOST PLAN 1", price: "₹699", cores: "2 vCore", ram: "8 GB", storage: "48 GB NVMe" },
+                { name: "VPS HOST PLAN 2", price: "₹1,399", cores: "4 vCore", ram: "16 GB", storage: "96 GB NVMe" },
+                { name: "VPS HOST PLAN 3", price: "₹2,199", cores: "6 vCore", ram: "24 GB", storage: "112 GB NVMe" },
+                { name: "VPS HOST PLAN 4", price: "₹2,999", cores: "8 vCore", ram: "32 GB", storage: "128 GB NVMe" },
+                { name: "VPS HOST PLAN 5", price: "₹4,699", cores: "16 vCore", ram: "64 GB", storage: "256 GB NVMe", popular: true }
               ].map((plan, i) => (
                 <div key={i} className={`relative h-full glass-panel p-8 rounded-3xl border ${plan.popular ? 'border-purple-500 shadow-lg shadow-purple-500/10' : 'border-slate-800'} flex flex-col`}>
                   {plan.popular && (
@@ -279,22 +297,23 @@ export default function Home() {
                   
                   <ul className="space-y-4 mb-8 flex-grow">
                     <li className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="w-5 h-5 text-purple-500" /> {plan.cores}
+                      <Cpu className="w-5 h-5 text-purple-500" /> {plan.cores}
                     </li>
                     <li className="flex items-center gap-3 text-slate-300">
                       <CheckCircle2 className="w-5 h-5 text-purple-500" /> {plan.ram} RAM
                     </li>
                     <li className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="w-5 h-5 text-purple-500" /> {plan.storage}
+                      <HardDrive className="w-5 h-5 text-purple-500" /> {plan.storage}
                     </li>
                     <li className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="w-5 h-5 text-purple-500" /> 1Gbps Port
+                      <Globe className="w-5 h-5 text-purple-500" /> 1Gbps Port
                     </li>
                   </ul>
                   
-                  <button className={`w-full py-3 rounded-xl font-semibold transition-all ${plan.popular ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
-                    Deploy Server
-                  </button>
+                  <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className={`w-full py-3 rounded-xl font-semibold transition-all text-center ${plan.popular ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
+                    Order Now
+                  </a>
+                  <p className="text-xs text-slate-500 mt-3 text-center">Click to open a ticket on Discord to purchase.</p>
                 </div>
               ))}
             </div>

@@ -11,8 +11,10 @@ import Login from './pages/Login';
 import ClaimFreeServer from './pages/ClaimFreeServer';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import { useFCM } from './hooks/useFCM';
 
 export default function App() {
+  useFCM();
   return (
     <BrowserRouter>
       <div className="min-h-screen flex flex-col bg-brand-darker selection:bg-brand-blue/30">

@@ -18,6 +18,7 @@ export default function ClaimFreeServer() {
   const { user, hasClaimedFreeServer, loading } = useAuth();
   const navigate = useNavigate();
   const [claiming, setClaiming] = useState(false);
+  const [claimStatus, setClaimStatus] = useState<'idle' | 'provisioning' | 'installing' | 'finalizing'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [selectedEgg, setSelectedEgg] = useState(EGGS[1].id); // Default to Paper
@@ -43,9 +44,14 @@ export default function ClaimFreeServer() {
     }
     
     setClaiming(true);
+    setClaimStatus('provisioning');
     setError(null);
 
     try {
+      // Simulate steps
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setClaimStatus('installing');
+      
       const response = await fetch('/api/servers/create-free', {
         method: 'POST',
         headers: {
@@ -64,6 +70,9 @@ export default function ClaimFreeServer() {
       if (!response.ok) {
         throw new Error(data.error || 'Failed to create server');
       }
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setClaimStatus('finalizing');
 
       // Update user document to mark free server as claimed
       const userRef = doc(db, 'users', user.uid);
@@ -84,13 +93,17 @@ export default function ClaimFreeServer() {
         createdAt: serverTimestamp()
       });
 
+      await new Promise(resolve => setTimeout(resolve, 1000));
       setCredentials(data.credentials);
       setSuccess(true);
+      setClaiming(false);
+      setClaimStatus('idle');
       
     } catch (err) {
       console.error("Error claiming server:", err);
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
       setClaiming(false);
+      setClaimStatus('idle');
     }
   };
 
@@ -257,6 +270,7 @@ export default function ClaimFreeServer() {
               {error && (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl mb-6 text-sm">
                   {error}
+                  <p className="mt-2">If this issue persists, please <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="underline font-bold">contact us on Discord</a> to open a support ticket.</p>
                 </div>
               )}
 
@@ -266,10 +280,10 @@ export default function ClaimFreeServer() {
                 className="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-blue/20"
               >
                 {claiming ? (
-                  <>
+                  <div className="flex items-center gap-3">
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Provisioning Server & User...
-                  </>
+                    <span className="capitalize">{claimStatus}...</span>
+                  </div>
                 ) : (
                   <>
                     Create My Server Now
