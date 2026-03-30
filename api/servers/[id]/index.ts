@@ -6,11 +6,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { panelId } = req.query;
+    const { id } = req.query;
     const PANEL_URL = process.env.PANEL_URL || 'https://gp.nikacloud.in';
     const API_KEY = process.env.PANEL_API_KEY || 'ptla_IoPnRywiup4TOqKlugmFv22IhSrbNOqOgT9E2OrQTY3';
 
-    const serverRes = await fetch(`${PANEL_URL}/api/application/servers?filter[uuidShort]=${panelId}&include=allocations`, {
+    const serverRes = await fetch(`${PANEL_URL}/api/application/servers?filter[uuidShort]=${id}&include=allocations`, {
       headers: { 
         'Authorization': `Bearer ${API_KEY}`, 
         'Accept': 'application/json' 
