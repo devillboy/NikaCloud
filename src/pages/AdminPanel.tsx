@@ -44,7 +44,7 @@ export default function AdminPanel() {
             <h2 className="text-xl font-bold mb-4">Send Push Notification</h2>
             <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full p-2 mb-4 bg-slate-800 rounded text-white" />
             <textarea placeholder="Body" value={body} onChange={(e) => setBody(e.target.value)} className="w-full p-2 mb-4 bg-slate-800 rounded text-white" />
-            <button onClick={sendNotification} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Send</button>
+            <button onClick={sendNotification} className="bg-brand-accent text-white px-4 py-2 rounded hover:bg-brand-accent-bright transition-colors">Send</button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

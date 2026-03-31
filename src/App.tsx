@@ -22,7 +22,7 @@ export default function App() {
   useFCM();
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex flex-col bg-brand-darker selection:bg-brand-blue/30">
+      <div className="min-h-screen flex flex-col bg-brand-darker selection:bg-brand-accent/30">
         <Navbar />
         <main className="flex-grow flex flex-col">
           <Routes>

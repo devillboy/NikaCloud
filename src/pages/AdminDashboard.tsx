@@ -58,7 +58,7 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (open: boo
       <div className={`fixed inset-y-0 left-0 z-30 w-64 bg-brand-card border-r border-slate-800 flex flex-col transform transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-20 flex items-center justify-between px-6 border-b border-slate-800">
           <Link to="/" className="flex items-center gap-2">
-            <Cloud className="w-6 h-6 text-brand-blue" />
+            <Cloud className="w-6 h-6 text-brand-accent" />
             <span className="font-bold text-xl text-white">NikaCloud</span>
           </Link>
           <button className="md:hidden text-slate-400" onClick={() => setIsOpen(false)}>
@@ -76,7 +76,7 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (open: boo
                 onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                   isActive 
-                    ? 'bg-brand-blue/10 text-brand-blue border border-brand-blue/20' 
+                    ? 'bg-brand-accent/10 text-brand-accent border border-brand-accent/20' 
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                 }`}
               >
@@ -115,7 +115,7 @@ const Topbar = ({ toggleSidebar }: { toggleSidebar: () => void }) => {
           <input 
             type="text" 
             placeholder="Search..." 
-            className="w-full bg-slate-900/50 border border-slate-700 rounded-full py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-blue transition-colors"
+            className="w-full bg-slate-900/50 border border-slate-700 rounded-full py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-accent transition-colors"
           />
         </div>
       </div>
@@ -123,7 +123,7 @@ const Topbar = ({ toggleSidebar }: { toggleSidebar: () => void }) => {
       <div className="flex items-center gap-6">
         <button className="relative text-slate-400 hover:text-white transition-colors">
           <Bell className="w-6 h-6" />
-          <span className="absolute top-0 right-0 w-2 h-2 bg-brand-blue rounded-full"></span>
+          <span className="absolute top-0 right-0 w-2 h-2 bg-brand-accent rounded-full"></span>
         </button>
         <div className="flex items-center gap-3 pl-6 border-l border-slate-800">
           <div className="text-right hidden md:block">
@@ -133,7 +133,7 @@ const Topbar = ({ toggleSidebar }: { toggleSidebar: () => void }) => {
           {user?.photoURL ? (
             <img src={user.photoURL} alt="User" className="w-10 h-10 rounded-full object-cover" referrerPolicy="no-referrer" />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold">
+            <div className="w-10 h-10 rounded-full bg-brand-accent flex items-center justify-center text-white font-bold">
               {user?.displayName?.charAt(0) || 'A'}
             </div>
           )}
@@ -167,9 +167,9 @@ const Analytics = () => {
   }, []);
 
   const stats = [
-    { label: 'Active Servers', value: servers.length.toString(), icon: Server, color: 'text-brand-blue', bg: 'bg-brand-blue/10' },
+    { label: 'Active Servers', value: servers.length.toString(), icon: Server, color: 'text-brand-accent', bg: 'bg-brand-accent/10' },
     { label: 'Total Users', value: usersCount.toString(), icon: Users, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-    { label: 'Network Traffic', value: 'Live', icon: Activity, color: 'text-green-500', bg: 'bg-green-500/10' },
+    { label: 'Network Traffic', value: 'Live', icon: Activity, color: 'text-brand-accent-bright', bg: 'bg-brand-accent-bright/10' },
     { label: 'Storage Used', value: 'Dynamic', icon: Database, color: 'text-orange-500', bg: 'bg-orange-500/10' },
   ];
 
@@ -204,7 +204,7 @@ const Analytics = () => {
         <div className="lg:col-span-2 glass-panel rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-white">Recent Deployments</h2>
-            <button className="text-sm text-brand-blue hover:text-blue-400 font-medium">View All</button>
+            <button className="text-sm text-brand-accent hover:text-brand-accent-bright font-medium">View All</button>
           </div>
           <div className="space-y-4">
             {loading ? (
@@ -214,7 +214,7 @@ const Analytics = () => {
             ) : servers.slice(0, 5).map((server, i) => (
               <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-slate-900/50 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer">
                 <div className="flex items-center gap-4">
-                  <div className={`w-3 h-3 rounded-full ${server.status === 'Online' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-yellow-500'}`} />
+                  <div className={`w-3 h-3 rounded-full ${server.status === 'Online' ? 'bg-brand-accent shadow-[0_0_10px_rgba(255,107,0,0.5)]' : 'bg-yellow-500'}`} />
                   <div>
                     <div className="font-medium text-white">{server.name}</div>
                     <div className="text-xs text-slate-400">{server.type}</div>
@@ -238,7 +238,7 @@ const Analytics = () => {
                 <span className="text-white font-medium">45%</span>
               </div>
               <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-brand-blue w-[45%]" />
+                <div className="h-full bg-brand-accent w-[45%]" />
               </div>
             </div>
             <div>
@@ -256,7 +256,7 @@ const Analytics = () => {
                 <span className="text-white font-medium">32%</span>
               </div>
               <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-green-500 w-[32%]" />
+                <div className="h-full bg-brand-accent-bright w-[32%]" />
               </div>
             </div>
           </div>
@@ -395,9 +395,9 @@ const ServerManagement = () => {
                 <td className="p-4 text-white font-medium">{server.name}</td>
                 <td className="p-4 text-slate-300">{server.status || 'Unknown'}</td>
                 <td className="p-4 text-right space-x-2">
-                  <button onClick={() => handlePowerAction(server.id, 'start')} className="text-green-400 hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-400/10">Start</button>
+                  <button onClick={() => handlePowerAction(server.id, 'start')} className="text-brand-accent hover:text-brand-accent-bright transition-colors p-2 rounded-lg hover:bg-brand-accent/10">Start</button>
                   <button onClick={() => handlePowerAction(server.id, 'stop')} className="text-yellow-400 hover:text-yellow-300 transition-colors p-2 rounded-lg hover:bg-yellow-400/10">Stop</button>
-                  <button onClick={() => handlePowerAction(server.id, 'restart')} className="text-blue-400 hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-400/10">Restart</button>
+                  <button onClick={() => handlePowerAction(server.id, 'restart')} className="text-brand-accent-bright hover:text-yellow-300 transition-colors p-2 rounded-lg hover:bg-brand-accent-bright/10">Restart</button>
                   <button onClick={() => handleDeleteServer(server.id)} className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-400/10"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>
@@ -425,7 +425,7 @@ const PlanManagement = () => {
           <h1 className="text-2xl font-bold text-white mb-2">Plan Management</h1>
           <p className="text-slate-400">Adjust pricing, resources, and availability of your hosting plans.</p>
         </div>
-        <button className="bg-brand-blue hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-medium transition-colors flex items-center gap-2">
+        <button className="bg-brand-accent hover:bg-brand-accent-bright text-white px-4 py-2 rounded-xl font-medium transition-colors flex items-center gap-2">
           <Plus className="w-5 h-5" />
           Create New Plan
         </button>
@@ -447,18 +447,18 @@ const PlanManagement = () => {
             {plans.map(plan => (
               <tr key={plan.id} className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors">
                 <td className="p-4 text-white font-medium flex items-center gap-3">
-                  <plan.icon className="w-5 h-5 text-brand-blue" />
+                  <plan.icon className="w-5 h-5 text-brand-accent" />
                   {plan.name}
                 </td>
                 <td className="p-4">
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${plan.type === 'Minecraft' ? 'bg-green-500/10 text-green-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${plan.type === 'Minecraft' ? 'bg-brand-accent/10 text-brand-accent' : 'bg-purple-500/10 text-purple-400'}`}>
                     {plan.type}
                   </span>
                 </td>
                 <td className="p-4 text-slate-300">${plan.price.toFixed(2)}</td>
                 <td className="p-4 text-slate-300">{plan.ram}</td>
                 <td className="p-4">
-                  <span className="px-2 py-1 rounded text-xs font-medium bg-brand-blue/10 text-brand-blue">
+                  <span className="px-2 py-1 rounded text-xs font-medium bg-brand-accent/10 text-brand-accent">
                     {plan.status}
                   </span>
                 </td>
@@ -502,7 +502,7 @@ const NotificationSender = () => {
           onChange={(e) => setBody(e.target.value)}
           className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white h-32"
         />
-        <button onClick={handleSend} className="w-full bg-brand-blue hover:bg-blue-600 text-white p-3 rounded-xl font-medium">
+        <button onClick={handleSend} className="w-full bg-brand-accent hover:bg-brand-accent-bright text-white p-3 rounded-xl font-medium">
           Send Notification
         </button>
       </div>

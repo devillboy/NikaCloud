@@ -1,48 +1,86 @@
 import React from "react";
 import { motion } from "motion/react";
+import { Shield } from "lucide-react";
 
 export default function Privacy() {
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass-panel p-10 rounded-3xl border border-slate-800"
-      >
-        <h1 className="text-4xl font-bold text-white mb-8 tracking-tight">Privacy <span className="text-fiery-gradient">Policy</span></h1>
-        
-        <div className="space-y-8 text-slate-400 leading-relaxed">
-          <section>
-            <h2 className="text-xl font-bold text-white mb-4">1. Information Collection</h2>
-            <p>We collect personal information such as your name, email address, and payment details when you register and use our services. This information is necessary for account management and service delivery.</p>
-          </section>
+    <div className="min-h-screen bg-brand-darker pt-32 pb-20 px-4">
+      <div className="max-w-4xl mx-auto">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="border border-brand-border p-12 relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <Shield className="w-64 h-64 text-white" />
+          </div>
 
-          <section>
-            <h2 className="text-xl font-bold text-white mb-4">2. Use of Information</h2>
-            <p>Your information is used to provide and improve our services, process payments, and communicate with you about your account and our offerings.</p>
-          </section>
+          <div className="flex items-center gap-2 mb-8">
+            <div className="w-2 h-2 bg-brand-accent animate-pulse" />
+            <span className="text-[10px] font-mono text-brand-accent uppercase tracking-[0.3em]">Privacy Protocol v1.0</span>
+          </div>
 
-          <section>
-            <h2 className="text-xl font-bold text-white mb-4">3. Data Security</h2>
-            <p>We implement advanced security measures to protect your personal data from unauthorized access, disclosure, or destruction. However, no method of transmission over the internet is 100% secure.</p>
-          </section>
+          <h1 className="text-4xl font-bold text-white mb-12 tracking-tighter uppercase italic">
+            Privacy <span className="text-brand-accent">Policy</span>
+          </h1>
+          
+          <div className="space-y-12">
+            <section>
+              <h2 className="text-xs font-mono font-bold text-white mb-4 uppercase tracking-[0.2em] flex items-center gap-3">
+                <span className="text-brand-accent">01.</span> Data Collection
+              </h2>
+              <p className="text-slate-500 font-mono text-xs leading-relaxed uppercase tracking-widest">
+                We collect essential metadata required for infrastructure management, including identifiers, network logs, and billing information.
+              </p>
+            </section>
 
-          <section>
-            <h2 className="text-xl font-bold text-white mb-4">4. Third-Party Services</h2>
-            <p>We may use third-party services for payment processing and analytics. These services have their own privacy policies and we are not responsible for their data practices.</p>
-          </section>
+            <section>
+              <h2 className="text-xs font-mono font-bold text-white mb-4 uppercase tracking-[0.2em] flex items-center gap-3">
+                <span className="text-brand-accent">02.</span> Information Usage
+              </h2>
+              <p className="text-slate-500 font-mono text-xs leading-relaxed uppercase tracking-widest">
+                Collected data is used exclusively to optimize network performance, process resource transactions, and maintain security protocols.
+              </p>
+            </section>
 
-          <section>
-            <h2 className="text-xl font-bold text-white mb-4">5. Cookies</h2>
-            <p>We use cookies to enhance your browsing experience and analyze website traffic. You can manage your cookie preferences through your browser settings.</p>
-          </section>
+            <section>
+              <h2 className="text-xs font-mono font-bold text-white mb-4 uppercase tracking-[0.2em] flex items-center gap-3">
+                <span className="text-brand-accent">03.</span> Encryption Protocols
+              </h2>
+              <p className="text-slate-500 font-mono text-xs leading-relaxed uppercase tracking-widest">
+                All sensitive data is encrypted at rest and in transit. We implement industry-standard security measures to prevent unauthorized access.
+              </p>
+            </section>
 
-          <section>
-            <h2 className="text-xl font-bold text-white mb-4">6. Changes to Policy</h2>
-            <p>We reserve the right to update this Privacy Policy at any time. We will notify you of any significant changes through our website or email.</p>
-          </section>
-        </div>
-      </motion.div>
+            <section>
+              <h2 className="text-xs font-mono font-bold text-white mb-4 uppercase tracking-[0.2em] flex items-center gap-3">
+                <span className="text-brand-accent">04.</span> Third-Party Nodes
+              </h2>
+              <p className="text-slate-500 font-mono text-xs leading-relaxed uppercase tracking-widest">
+                We may integrate with verified third-party processors for payment and analytics. These entities adhere to their own strict privacy protocols.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xs font-mono font-bold text-white mb-4 uppercase tracking-[0.2em] flex items-center gap-3">
+                <span className="text-brand-accent">05.</span> Session Cookies
+              </h2>
+              <p className="text-slate-500 font-mono text-xs leading-relaxed uppercase tracking-widest">
+                Our platform uses cookies to maintain session state and analyze traffic patterns. You can manage these through your browser's security settings.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xs font-mono font-bold text-white mb-4 uppercase tracking-[0.2em] flex items-center gap-3">
+                <span className="text-brand-accent">06.</span> Protocol Updates
+              </h2>
+              <p className="text-slate-500 font-mono text-xs leading-relaxed uppercase tracking-widest">
+                We reserve the right to update this policy. Significant changes will be broadcasted through our official communication channels.
+              </p>
+            </section>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

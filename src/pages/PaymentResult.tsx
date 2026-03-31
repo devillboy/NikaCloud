@@ -34,8 +34,8 @@ export default function PaymentResult() {
       >
         {status === 'success' ? (
           <>
-            <div className="w-20 h-20 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-10 h-10 text-green-400" />
+            <div className="w-20 h-20 rounded-2xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center mx-auto mb-6">
+              <CheckCircle2 className="w-10 h-10 text-brand-accent" />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">Payment Verified!</h1>
             <p className="text-slate-400 mb-8">
@@ -44,7 +44,7 @@ export default function PaymentResult() {
             
             <div className="bg-slate-900/50 rounded-2xl p-4 mb-8 border border-slate-800 text-left">
               <div className="flex items-center gap-3 mb-3">
-                <ShieldCheck className="w-4 h-4 text-brand-blue" />
+                <ShieldCheck className="w-4 h-4 text-brand-accent" />
                 <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Server Specs</span>
               </div>
               <div className="grid grid-cols-3 gap-2">

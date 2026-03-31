@@ -19,35 +19,62 @@ interface PlanCardProps {
 export const PlanCard: React.FC<PlanCardProps> = ({ plan, onSelect }) => {
   return (
     <motion.div 
-      whileHover={{ y: -5 }}
-      className="glass-panel p-6 rounded-3xl border border-slate-800 flex flex-col h-full"
+      whileHover={{ y: -2 }}
+      className="bg-brand-card border border-brand-border p-6 flex flex-col h-full relative overflow-hidden group"
     >
-      <h3 className="text-xl font-bold mb-2 text-white uppercase tracking-wider">{plan.name}</h3>
-      <div className="mb-6">
-        <span className="text-3xl font-bold text-white">{plan.price}</span>
-        <span className="text-slate-400 text-sm">/mo</span>
+      {/* Decorative corner accent */}
+      <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-brand-accent/20 group-hover:border-brand-accent transition-colors" />
+      
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h3 className="text-xs font-mono text-brand-accent uppercase tracking-[0.2em] mb-1">System Node</h3>
+          <h2 className="text-xl font-bold text-white tracking-tight">{plan.name}</h2>
+        </div>
+        <div className="text-right">
+          <div className="text-2xl font-mono font-bold text-white">{plan.price}</div>
+          <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Per Cycle</div>
+        </div>
       </div>
       
-      <ul className="space-y-3 mb-8 flex-grow text-sm">
-        <li className="flex items-center gap-2 text-slate-300">
-          <Zap className="w-4 h-4 text-brand-accent" /> {plan.ram} RAM
-        </li>
-        <li className="flex items-center gap-2 text-slate-300">
-          <HardDrive className="w-4 h-4 text-brand-accent" /> {plan.ssd} NVMe SSD
-        </li>
-        <li className="flex items-center gap-2 text-slate-300">
-          <Cpu className="w-4 h-4 text-brand-accent" /> {plan.cpu} CPU
-        </li>
-        <li className="flex items-center gap-2 text-slate-300">
-          <CheckCircle2 className="w-4 h-4 text-brand-accent" /> Instant Setup
-        </li>
-      </ul>
+      <div className="space-y-4 mb-8 flex-grow">
+        <div className="p-3 bg-brand-dark border border-brand-border rounded-lg">
+          <div className="flex items-center justify-between text-xs font-mono mb-2">
+            <span className="text-slate-500 uppercase">Memory Allocation</span>
+            <span className="text-brand-accent">{plan.ram}</span>
+          </div>
+          <div className="h-1 bg-brand-border rounded-full overflow-hidden">
+            <div className="h-full bg-brand-accent w-3/4" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 bg-brand-dark border border-brand-border rounded-lg">
+            <div className="text-[10px] font-mono text-slate-500 uppercase mb-1">Storage</div>
+            <div className="text-sm font-mono text-white">{plan.ssd}</div>
+          </div>
+          <div className="p-3 bg-brand-dark border border-brand-border rounded-lg">
+            <div className="text-[10px] font-mono text-slate-500 uppercase mb-1">Compute</div>
+            <div className="text-sm font-mono text-white">{plan.cpu}</div>
+          </div>
+        </div>
+
+        <ul className="space-y-2">
+          <li className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+            <div className="w-1 h-1 bg-brand-accent rounded-full" />
+            DDoS PROTECTION ACTIVE
+          </li>
+          <li className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+            <div className="w-1 h-1 bg-brand-accent rounded-full" />
+            INSTANT PROVISIONING
+          </li>
+        </ul>
+      </div>
       
       <button
         onClick={() => onSelect(plan)}
-        className="w-full py-3 rounded-xl bg-fiery-gradient hover:opacity-90 text-white font-bold transition-all shadow-lg shadow-brand-accent/20"
+        className="w-full py-3 bg-brand-accent text-brand-darker text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors"
       >
-        Select Plan
+        Initialize Node
       </button>
     </motion.div>
   );

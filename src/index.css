@@ -1,45 +1,54 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   
-  --color-brand-accent: #FF4500; /* Fiery Orange-Red */
-  --color-brand-accent-light: #FFD700; /* Gold/Yellow */
-  --color-brand-dark: #050505;
-  --color-brand-darker: #000000;
-  --color-brand-card: #111111;
+  --color-brand-accent: #FF6B00; /* Fiery Orange from logo */
+  --color-brand-accent-bright: #FFD700; /* Bright Yellow from logo */
+  --color-brand-dark: #0A0A0A;
+  --color-brand-darker: #050505;
+  --color-brand-card: #121212;
+  --color-brand-border: #1F1F1F;
 }
 
 @layer base {
   body {
-    @apply bg-brand-darker text-slate-200 antialiased;
+    @apply bg-brand-darker text-slate-300 antialiased font-sans;
   }
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+    @apply bg-brand-card border border-brand-border shadow-2xl;
   }
-  .text-fiery-gradient {
-    @apply bg-gradient-to-r from-brand-accent-light to-brand-accent bg-clip-text text-transparent;
+  .text-neon-gradient {
+    @apply bg-gradient-to-r from-brand-accent to-brand-accent-bright bg-clip-text text-transparent;
   }
-  .bg-fiery-gradient {
-    @apply bg-gradient-to-r from-brand-accent to-brand-accent-light;
+  .bg-neon-gradient {
+    @apply bg-gradient-to-r from-brand-accent to-brand-accent-bright;
+  }
+  .fiery-gradient {
+    @apply bg-gradient-to-r from-brand-accent to-brand-accent-bright;
+  }
+  .technical-grid {
+    background-image: radial-gradient(circle at 1px 1px, #1F1F1F 1px, transparent 0);
+    background-size: 40px 40px;
   }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #000000;
+  background: #050505;
 }
 ::-webkit-scrollbar-thumb {
-  background: #333333;
-  border-radius: 4px;
+  background: #1F1F1F;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #FF4500;
+  background: #FF6B00;
 }

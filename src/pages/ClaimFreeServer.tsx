@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Server, CheckCircle2, Loader2, ArrowRight, Copy, ExternalLink, ShieldAlert } from 'lucide-react';
+import { Server, CheckCircle2, Loader2, ArrowRight, Copy, ExternalLink, ShieldAlert, Terminal, Cpu, HardDrive, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, updateDoc, collection, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -32,14 +32,14 @@ export default function ClaimFreeServer() {
     } else if (!loading && user && hasClaimedFreeServer && !success) {
       navigate('/dashboard');
     } else if (user && !serverName) {
-      setServerName(`${user.displayName || user.email?.split('@')[0]}'s Server`);
+      setServerName(`${user.displayName || user.email?.split('@')[0]}'s Node`);
     }
   }, [user, hasClaimedFreeServer, loading, navigate, success]);
 
   const handleClaim = async () => {
     if (!user) return;
     if (!serverName.trim()) {
-      setError("Please enter a server name");
+      setError("Protocol Error: Node identifier required.");
       return;
     }
     
@@ -68,7 +68,7 @@ export default function ClaimFreeServer() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create server');
+        throw new Error(data.error || 'Infrastructure allocation failed.');
       }
 
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -83,7 +83,7 @@ export default function ClaimFreeServer() {
       // Create server document in Firestore
       const serverRef = doc(collection(db, 'servers'));
       await setDoc(serverRef, {
-        name: 'Free Minecraft Server',
+        name: serverName.trim(),
         type: EGGS.find(e => e.id === selectedEgg)?.name || 'Minecraft',
         status: 'Starting',
         ip: 'Pending Allocation...',
@@ -106,7 +106,7 @@ export default function ClaimFreeServer() {
       
     } catch (err) {
       console.error("Error claiming server:", err);
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setError(err instanceof Error ? err.message : 'An unexpected protocol error occurred');
       setClaiming(false);
       setClaimStatus('idle');
     }
@@ -121,150 +121,177 @@ export default function ClaimFreeServer() {
   };
 
   if (loading || !user) {
-    return <div className="flex-1 bg-brand-darker flex items-center justify-center text-white">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-brand-darker flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-brand-accent animate-spin" />
+          <p className="font-mono text-[10px] uppercase tracking-widest text-slate-400">Initializing Terminal...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center px-4 relative overflow-hidden bg-brand-darker py-12">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20" />
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-brand-darker py-32">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-10" />
       
-      <div className="w-full max-w-2xl relative z-10">
+      <div className="w-full max-w-4xl relative z-10">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass-panel p-8 rounded-3xl shadow-2xl border border-brand-blue/30"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-brand-dark border border-brand-border p-8 md:p-12"
         >
           {success && credentials ? (
-            <div className="text-center py-4">
-              <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 className="w-10 h-10 text-green-500" />
+            <div className="text-center">
+              <div className="w-20 h-20 bg-brand-accent/20 flex items-center justify-center mx-auto mb-8 border border-brand-accent/30">
+                <CheckCircle2 className="w-10 h-10 text-brand-accent" />
               </div>
-              <h2 className="text-3xl font-bold text-white mb-2">Server Created Successfully!</h2>
-              <p className="text-slate-300 mb-8">
-                Your free server has been provisioned. Please save your panel credentials below.
+              <h2 className="text-4xl font-bold text-white mb-4 uppercase tracking-tighter">Node Provisioned</h2>
+              <p className="text-slate-400 mb-12 font-mono text-sm">
+                Your infrastructure has been successfully allocated. Save your access credentials immediately.
               </p>
 
-              <div className="bg-slate-900/80 border border-slate-700 rounded-2xl p-6 mb-8 text-left relative">
+              <div className="bg-brand-darker border border-brand-border p-8 mb-12 text-left relative group">
                 <button 
                   onClick={copyCredentials}
-                  className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm bg-slate-800 px-3 py-1.5 rounded-lg"
+                  className="absolute top-4 right-4 text-slate-500 hover:text-brand-accent transition-colors flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest border border-brand-border px-4 py-2 hover:border-brand-accent"
                 >
-                  {copied ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                  {copied ? 'Copied!' : 'Copy'}
+                  {copied ? <CheckCircle2 className="w-3 h-3 text-brand-accent" /> : <Copy className="w-3 h-3" />}
+                  {copied ? 'Copied' : 'Copy Data'}
                 </button>
                 
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <ShieldAlert className="w-5 h-5 text-yellow-500" />
-                  Save These Credentials
+                <h3 className="text-sm font-bold text-white mb-8 flex items-center gap-3 uppercase tracking-widest">
+                  <ShieldAlert className="w-5 h-5 text-brand-accent" />
+                  Access Credentials
                 </h3>
                 
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div>
-                    <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Panel URL</div>
-                    <div className="font-mono text-brand-blue">{credentials.panelUrl}</div>
+                    <div className="text-[9px] text-slate-500 uppercase tracking-widest mb-2 font-mono">Endpoint</div>
+                    <div className="font-mono text-brand-accent text-xs break-all">{credentials.panelUrl}</div>
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Username / Email</div>
-                    <div className="font-mono text-white">{credentials.username}</div>
+                    <div className="text-[9px] text-slate-500 uppercase tracking-widest mb-2 font-mono">Identifier</div>
+                    <div className="font-mono text-white text-xs break-all">{credentials.username}</div>
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Password</div>
-                    <div className="font-mono text-white bg-slate-950 px-3 py-2 rounded-lg inline-block border border-slate-800">
+                    <div className="text-[9px] text-slate-500 uppercase tracking-widest mb-2 font-mono">Access Key</div>
+                    <div className="font-mono text-white bg-brand-dark p-3 border border-brand-border text-xs break-all">
                       {credentials.password}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a 
                   href={credentials.panelUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2"
+                  className="bg-transparent border border-brand-accent text-brand-accent font-mono font-bold py-4 px-8 uppercase tracking-widest text-[10px] hover:bg-brand-accent hover:text-brand-darker transition-all flex items-center justify-center gap-2"
                 >
-                  Open Panel <ExternalLink className="w-4 h-4" />
+                  Access Panel <ExternalLink className="w-3 h-3" />
                 </a>
                 <button 
                   onClick={() => navigate('/dashboard')}
-                  className="bg-brand-blue hover:bg-blue-600 text-white font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2"
+                  className="bg-brand-accent text-brand-darker font-mono font-bold py-4 px-8 uppercase tracking-widest text-[10px] hover:bg-white transition-all flex items-center justify-center gap-2"
                 >
-                  Go to Dashboard <ArrowRight className="w-4 h-4" />
+                  Open Terminal <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
             </div>
           ) : (
             <>
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-brand-blue/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-brand-blue/30">
-                  <Server className="w-8 h-8 text-brand-blue" />
+              <div className="mb-12">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-2 h-2 bg-brand-accent animate-pulse" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-brand-accent">Infrastructure Claim</span>
                 </div>
-                <h1 className="text-3xl font-bold text-white mb-2">Claim Your Free Server</h1>
-                <p className="text-slate-400">Get started with a high-performance Minecraft server instantly.</p>
+                <h1 className="text-5xl font-bold text-white tracking-tighter uppercase mb-4">Initialize <span className="text-brand-accent">Free Node</span></h1>
+                <p className="text-slate-400 font-mono text-sm">Configure your complimentary high-performance compute node.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-slate-900/50 rounded-2xl p-6 border border-slate-800">
-                  <h3 className="text-lg font-semibold text-white mb-4">Server Details</h3>
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-slate-400 mb-2">
-                      Server Name
-                    </label>
-                    <input
-                      type="text"
-                      value={serverName}
-                      onChange={(e) => setServerName(e.target.value)}
-                      placeholder="My Awesome Server"
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-blue"
-                      maxLength={30}
-                    />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                      <Terminal className="w-4 h-4 text-brand-accent" />
+                      Configuration
+                    </h3>
+                    <div className="space-y-6">
+                      <div>
+                        <label className="block font-mono text-[10px] uppercase tracking-widest text-slate-500 mb-3">
+                          Node Identifier
+                        </label>
+                        <input
+                          type="text"
+                          value={serverName}
+                          onChange={(e) => setServerName(e.target.value)}
+                          placeholder="ALPHA-NODE-01"
+                          className="w-full bg-brand-darker border border-brand-border px-6 py-4 text-white font-mono text-sm placeholder-slate-700 focus:outline-none focus:border-brand-accent transition-colors"
+                          maxLength={30}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-4">Specifications</h3>
-                  <ul className="space-y-3">
-                    <li className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="w-5 h-5 text-brand-blue" /> 
-                      <span className="font-medium text-white">5GB</span> DDR4 RAM
-                    </li>
-                    <li className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="w-5 h-5 text-brand-blue" /> 
-                      <span className="font-medium text-white">10GB</span> NVMe Storage
-                    </li>
-                    <li className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="w-5 h-5 text-brand-blue" /> 
-                      <span className="font-medium text-white">100%</span> CPU Allocation
-                    </li>
-                    <li className="flex items-center gap-3 text-slate-300">
-                      <CheckCircle2 className="w-5 h-5 text-brand-blue" /> 
-                      <span className="font-medium text-white">1</span> Database & Backup
-                    </li>
-                  </ul>
+
+                  <div>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                      <Cpu className="w-4 h-4 text-brand-accent" />
+                      Allocated Resources
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-brand-darker border border-brand-border p-4">
+                        <div className="font-mono text-[9px] uppercase tracking-widest text-slate-500 mb-1">Memory</div>
+                        <div className="text-white font-bold text-sm">5GB DDR4</div>
+                      </div>
+                      <div className="bg-brand-darker border border-brand-border p-4">
+                        <div className="font-mono text-[9px] uppercase tracking-widest text-slate-500 mb-1">Compute</div>
+                        <div className="text-white font-bold text-sm">100% CPU</div>
+                      </div>
+                      <div className="bg-brand-darker border border-brand-border p-4">
+                        <div className="font-mono text-[9px] uppercase tracking-widest text-slate-500 mb-1">Storage</div>
+                        <div className="text-white font-bold text-sm">10GB NVMe</div>
+                      </div>
+                      <div className="bg-brand-darker border border-brand-border p-4">
+                        <div className="font-mono text-[9px] uppercase tracking-widest text-slate-500 mb-1">Network</div>
+                        <div className="text-white font-bold text-sm">1 Gbps</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="bg-slate-900/50 rounded-2xl p-6 border border-slate-800">
-                  <h3 className="text-lg font-semibold text-white mb-4">Select Server Type</h3>
+                <div>
+                  <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-brand-accent" />
+                    Environment Selection
+                  </h3>
                   <div className="space-y-3">
                     {EGGS.map(egg => (
                       <label 
                         key={egg.id} 
-                        className={`flex items-start gap-3 p-3 rounded-xl cursor-pointer border transition-all ${
+                        className={`flex items-center gap-4 p-4 cursor-pointer border transition-all duration-300 ${
                           selectedEgg === egg.id 
-                            ? 'bg-brand-blue/10 border-brand-blue' 
-                            : 'bg-slate-800/50 border-transparent hover:bg-slate-800'
+                            ? 'bg-brand-accent/5 border-brand-accent' 
+                            : 'bg-brand-darker border-brand-border hover:border-slate-700'
                         }`}
                       >
+                        <div className={`w-4 h-4 border flex items-center justify-center transition-colors ${selectedEgg === egg.id ? 'border-brand-accent bg-brand-accent' : 'border-slate-700'}`}>
+                          {selectedEgg === egg.id && <CheckCircle2 className="w-3 h-3 text-brand-darker" />}
+                        </div>
                         <input 
                           type="radio" 
                           name="eggType" 
                           value={egg.id} 
                           checked={selectedEgg === egg.id}
                           onChange={() => setSelectedEgg(egg.id)}
-                          className="mt-1 text-brand-blue focus:ring-brand-blue bg-slate-900 border-slate-700"
+                          className="hidden"
                         />
                         <div>
-                          <div className={`font-medium ${selectedEgg === egg.id ? 'text-brand-blue' : 'text-white'}`}>
+                          <div className={`text-xs font-bold uppercase tracking-widest ${selectedEgg === egg.id ? 'text-brand-accent' : 'text-white'}`}>
                             {egg.name}
                           </div>
-                          <div className="text-xs text-slate-400">{egg.description}</div>
+                          <div className="text-[10px] font-mono text-slate-500 uppercase mt-1">{egg.description}</div>
                         </div>
                       </label>
                     ))}
@@ -273,25 +300,32 @@ export default function ClaimFreeServer() {
               </div>
 
               {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl mb-6 text-sm">
-                  {error}
-                  <p className="mt-2">If this issue persists, please <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="underline font-bold">contact us on Discord</a> to open a support ticket.</p>
+                <div className="bg-red-500/10 border border-red-500/20 p-6 mb-8">
+                  <div className="flex items-center gap-3 text-red-500 mb-2">
+                    <ShieldAlert className="w-4 h-4" />
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Protocol Error</span>
+                  </div>
+                  <p className="text-red-400 font-mono text-xs leading-relaxed">
+                    {error}
+                    <br />
+                    <span className="opacity-70 mt-2 block italic">If issue persists, contact infrastructure support on Discord.</span>
+                  </p>
                 </div>
               )}
 
               <button 
                 onClick={handleClaim}
                 disabled={claiming}
-                className="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-blue/20"
+                className="w-full bg-brand-accent text-brand-darker font-mono font-bold py-5 uppercase tracking-[0.2em] text-xs hover:bg-white transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {claiming ? (
-                  <div className="flex items-center gap-3">
+                  <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    <span className="capitalize">{claimStatus}...</span>
-                  </div>
+                    <span>{claimStatus} in progress...</span>
+                  </>
                 ) : (
                   <>
-                    Create My Server Now
+                    Initialize Node Deployment
                     <ArrowRight className="w-5 h-5" />
                   </>
                 )}

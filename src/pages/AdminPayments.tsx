@@ -153,7 +153,7 @@ export const AdminPayments = () => {
                   </td>
                   <td className="p-4">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
-                      payment.status === 'Approved' ? 'bg-green-500/10 text-green-400' :
+                      payment.status === 'Approved' ? 'bg-brand-accent/10 text-brand-accent' :
                       payment.status === 'Rejected' ? 'bg-red-500/10 text-red-400' :
                       'bg-yellow-500/10 text-yellow-400'
                     }`}>
@@ -178,7 +178,7 @@ export const AdminPayments = () => {
                       <button 
                         onClick={() => verifyPayment(payment)}
                         disabled={verifying === payment.id || payment.status !== 'Pending'}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue text-xs font-bold transition-all disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent text-xs font-bold transition-all disabled:opacity-50"
                       >
                         <ShieldCheck className="w-4 h-4" />
                         {verifying === payment.id ? "Analyzing..." : "AI Verify"}
@@ -187,7 +187,7 @@ export const AdminPayments = () => {
                         <>
                           <button 
                             onClick={() => handleManualAction(payment.id, 'Approved', payment)}
-                            className="p-2 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-400 transition-colors"
+                            className="p-2 rounded-lg bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent transition-colors"
                             title="Approve Manually"
                           >
                             <CheckCircle2 className="w-4 h-4" />

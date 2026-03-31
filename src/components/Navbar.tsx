@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { Cloud, LayoutDashboard, Menu, X, LogOut } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { LayoutDashboard, Menu, X, LogOut, Terminal, LogIn } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -10,81 +10,84 @@ export default function Navbar() {
   const { user, isAdmin, logout } = useAuth();
   const isAuthPage = location.pathname.startsWith('/admin') || location.pathname === '/login' || location.pathname === '/claim-free-server';
 
-  if (isAuthPage) return null; // Admin has its own sidebar/nav
+  if (isAuthPage) return null;
+
+  const navLinks = [
+    { name: 'Infrastructure', href: '/#features' },
+    { name: 'Nodes', href: '/#plans' },
+    { name: 'Billing', href: '/billing' },
+    { name: 'Discord', href: 'https://discord.gg/nikacloud', external: true },
+  ];
 
   return (
-    <nav className="fixed w-full z-50 top-0 transition-all duration-300 glass-panel border-b-0">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-brand-darker/80 backdrop-blur-md border-b border-brand-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between h-20 items-center">
           <Link to="/" className="flex items-center gap-3 group">
-            {/* Logo */}
-            <img src="/logo.png" alt="NikaCloud Logo" className="w-12 h-12 object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
-            <span className="font-display font-bold text-3xl tracking-tighter text-white">
-              Nika<span className="text-fiery-gradient">Cloud</span>
-            </span>
+            <div className="w-10 h-10 bg-brand-accent flex items-center justify-center group-hover:rotate-90 transition-transform duration-500">
+              <Terminal className="w-6 h-6 text-brand-darker" />
+            </div>
+            <span className="text-xl font-bold text-white tracking-tighter uppercase">Nika<span className="text-brand-accent">Cloud</span></span>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
-            <Link to="/#features" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Features</Link>
-            <Link to="/#minecraft" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Minecraft</Link>
-            <Link to="/#vps" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">VPS</Link>
-            <Link to="/billing" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Billing</Link>
-            <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Discord</a>
+          <div className="hidden md:flex items-center gap-10">
+            {navLinks.map((link) => (
+              link.external ? (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-brand-accent transition-colors"
+                >
+                  {link.name}
+                </a>
+              ) : (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-brand-accent transition-colors"
+                >
+                  {link.name}
+                </a>
+              )
+            ))}
             
             {user ? (
-              <div className="flex items-center gap-4">
-                {isAdmin ? (
-                  <Link to="/admin">
-                    <motion.button 
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-fiery-gradient hover:opacity-90 text-white text-sm font-medium transition-colors"
-                    >
-                      <LayoutDashboard className="w-4 h-4" />
-                      Admin Portal
-                    </motion.button>
-                  </Link>
-                ) : (
-                  <Link to="/dashboard">
-                    <motion.button 
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-fiery-gradient hover:opacity-90 text-white text-sm font-medium transition-colors"
-                    >
-                      <LayoutDashboard className="w-4 h-4" />
-                      Dashboard
-                    </motion.button>
-                  </Link>
-                )}
-                {user?.photoURL ? (
-                  <img src={user.photoURL} alt="User" className="w-10 h-10 rounded-full object-cover border border-white/10" referrerPolicy="no-referrer" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-fiery-gradient flex items-center justify-center text-white font-bold">
-                    {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                  </div>
-                )}
-                <button onClick={() => logout()} className="text-gray-300 hover:text-white transition-colors">
-                  <LogOut className="w-5 h-5" />
+              <div className="flex items-center gap-6">
+                <Link
+                  to={isAdmin ? "/admin" : "/dashboard"}
+                  className="flex items-center gap-2 px-5 py-2 border border-brand-accent text-brand-accent text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-brand-darker transition-all"
+                >
+                  <LayoutDashboard className="w-3 h-3" />
+                  {isAdmin ? "Admin" : "Terminal"}
+                </Link>
+                <button 
+                  onClick={() => logout()} 
+                  className="text-slate-400 hover:text-brand-accent transition-colors"
+                  title="Terminate Session"
+                >
+                  <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <Link to="/login">
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-fiery-gradient hover:opacity-90 text-white text-sm font-medium transition-colors"
-                >
-                  <LayoutDashboard className="w-4 h-4" />
-                  Client Area
-                </motion.button>
+              <Link
+                to="/login"
+                className="flex items-center gap-2 px-5 py-2 bg-brand-accent text-brand-darker text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-white transition-all"
+              >
+                <LogIn className="w-3 h-3" />
+                Authorize
               </Link>
             )}
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            <button onClick={() => setIsOpen(!isOpen)} className="text-gray-300 hover:text-white">
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 text-slate-400 hover:text-white transition-colors"
+            >
               {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
@@ -92,46 +95,59 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Nav */}
-      {isOpen && (
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="md:hidden glass-panel border-t border-white/10"
-        >
-          <div className="px-4 pt-2 pb-6 space-y-4 flex flex-col">
-            <Link to="/#features" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">Features</Link>
-            <Link to="/#minecraft" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">Minecraft</Link>
-            <Link to="/#vps" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">VPS</Link>
-            <Link to="/billing" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">Billing</Link>
-            <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="text-base font-medium text-gray-300 hover:text-white">Discord</a>
-            
-            {user ? (
-              <>
-                {isAdmin ? (
-                  <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-fiery-gradient hover:opacity-90 text-white font-medium">
-                    <LayoutDashboard className="w-5 h-5" />
-                    Admin Portal
-                  </Link>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-brand-dark border-b border-brand-border overflow-hidden"
+          >
+            <div className="px-4 pt-4 pb-8 space-y-4">
+              {navLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className="block text-xs font-mono font-bold uppercase tracking-widest text-slate-400 hover:text-brand-accent"
+                >
+                  {link.name}
+                </a>
+              ))}
+              <div className="pt-4 border-t border-brand-border">
+                {user ? (
+                  <div className="space-y-4">
+                    <Link
+                      to={isAdmin ? "/admin" : "/dashboard"}
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center justify-center gap-2 w-full py-3 border border-brand-accent text-brand-accent text-xs font-mono font-bold uppercase tracking-widest"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      {isAdmin ? "Admin Portal" : "Terminal"}
+                    </Link>
+                    <button
+                      onClick={() => { logout(); setIsOpen(false); }}
+                      className="flex items-center justify-center gap-2 w-full py-3 border border-red-500/50 text-red-500 text-xs font-mono font-bold uppercase tracking-widest"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Terminate
+                    </button>
+                  </div>
                 ) : (
-                  <Link to="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-fiery-gradient hover:opacity-90 text-white font-medium">
-                    <LayoutDashboard className="w-5 h-5" />
-                    Dashboard
+                  <Link
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-brand-accent text-brand-darker text-xs font-mono font-bold uppercase tracking-widest"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Authorize
                   </Link>
                 )}
-                <button onClick={() => { logout(); setIsOpen(false); }} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium">
-                  <LogOut className="w-5 h-5" />
-                  Logout
-                </button>
-              </>
-            ) : (
-              <Link to="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-fiery-gradient hover:opacity-90 text-white font-medium">
-                <LayoutDashboard className="w-5 h-5" />
-                Client Area
-              </Link>
-            )}
-          </div>
-        </motion.div>
-      )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }

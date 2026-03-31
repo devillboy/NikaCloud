@@ -75,7 +75,7 @@ export default function UserDashboard() {
   if (loading || fetching) {
     return (
       <div className="flex-1 bg-brand-darker flex items-center justify-center pt-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-blue"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-accent"></div>
       </div>
     );
   }
@@ -113,7 +113,7 @@ export default function UserDashboard() {
             {servers.length < 2 ? (
               <button 
                 onClick={() => navigate('/claim-free-server')}
-                className="px-6 py-3 bg-brand-blue hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
+                className="px-6 py-3 bg-brand-accent hover:bg-brand-accent-bright text-white rounded-xl font-medium transition-colors"
               >
                 Claim Free Server
               </button>
@@ -145,8 +145,8 @@ export default function UserDashboard() {
                 <div className="p-6 border-b border-white/5 bg-slate-900/50">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-brand-blue/20 flex items-center justify-center border border-brand-blue/30">
-                        <Server className="w-5 h-5 text-brand-blue" />
+                      <div className="w-10 h-10 rounded-lg bg-brand-accent/20 flex items-center justify-center border border-brand-accent/30">
+                        <Server className="w-5 h-5 text-brand-accent" />
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-white">{server.name}</h3>
@@ -154,17 +154,17 @@ export default function UserDashboard() {
                       </div>
                     </div>
                     <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5
-                      ${displayStatus === 'Online' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 
+                      ${displayStatus === 'Online' ? 'bg-brand-accent/10 text-brand-accent border border-brand-accent/20' : 
                         displayStatus === 'Starting' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 
                         'bg-red-500/10 text-red-400 border border-red-500/20'}`}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full ${displayStatus === 'Online' ? 'bg-green-400' : displayStatus === 'Starting' ? 'bg-yellow-400' : 'bg-red-400'}`}></span>
+                      <span className={`w-1.5 h-1.5 rounded-full ${displayStatus === 'Online' ? 'bg-brand-accent' : displayStatus === 'Starting' ? 'bg-yellow-400' : 'bg-red-400'}`}></span>
                       {displayStatus}
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm text-slate-300 bg-slate-950/50 px-3 py-2 rounded-lg border border-white/5">
-                    <Activity className="w-4 h-4 text-brand-blue" />
+                    <Activity className="w-4 h-4 text-brand-accent" />
                     <span className="font-mono">{displayIp}</span>
                   </div>
                 </div>
@@ -200,7 +200,7 @@ export default function UserDashboard() {
                     href={`https://gp.nikacloud.in/server/${server.panelId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue rounded-xl font-medium transition-colors border border-brand-blue/20"
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent rounded-xl font-medium transition-colors border border-brand-accent/20"
                   >
                     <ExternalLink className="w-4 h-4" /> Manage Server
                   </a>

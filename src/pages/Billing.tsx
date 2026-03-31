@@ -45,13 +45,19 @@ export default function Billing() {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
+        console.log("Fetching plans from /api/plans...");
         const res = await fetch("/api/plans");
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        console.log("Plans response status:", res.status);
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("Plans response error body:", text);
+          throw new Error(`Infrastructure API Error: ${res.status}. Protocol synchronization failed.`);
+        }
         const data = await res.json();
         setPlans(data);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching plans:", err);
-        setError("Failed to load plans. Please refresh the page.");
+        setError(`Failed to synchronize with Node Cluster: ${err.message || "Unknown protocol error"}. Please re-initialize the connection.`);
       } finally {
         setLoading(false);
       }
@@ -61,7 +67,7 @@ export default function Billing() {
 
   const handlePaymentSubmitted = async (screenshotBase64: string, upiId: string, utrId: string) => {
     if (!auth.currentUser) {
-      setError("You must be logged in to purchase a plan.");
+      setError("Authorization required. Please log in to your terminal.");
       return;
     }
 
@@ -83,7 +89,7 @@ export default function Billing() {
           specs: {
             ram: selectedPlan.ram,
             cpu: selectedPlan.cpu,
-            ssd: selectedPlan.ssd
+            ssd: selectedPlan.ssd || selectedPlan.storage
           },
           screenshotUrl: screenshotBase64,
           status: "Pending",
@@ -105,8 +111,8 @@ export default function Billing() {
             },
           },
           {
-            text: `Analyze this payment screenshot. 
-            The user claims to have paid ${selectedPlan.price} for ${selectedPlan.name}.
+            text: `Analyze this payment screenshot for NikaCloud infrastructure. 
+            The user claims to have paid ${selectedPlan.price} for ${selectedPlan.name} Node.
             User UPI ID: ${upiId}
             Transaction UTR ID: ${utrId}
             Is it a genuine payment to nikacloud@nyes? 
@@ -135,8 +141,8 @@ export default function Billing() {
         // 4. Create the real server record
         try {
           await addDoc(collection(db, "servers"), {
-            name: `${selectedPlan.name} Server`,
-            type: "Minecraft",
+            name: `${selectedPlan.name} Node`,
+            type: selectedPlan.type === 'minecraft' ? "Minecraft" : "VPS",
             status: "Starting",
             ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
             userId: auth.currentUser.uid,
@@ -145,7 +151,7 @@ export default function Billing() {
             specs: {
               ram: selectedPlan.ram,
               cpu: selectedPlan.cpu,
-              ssd: selectedPlan.ssd
+              ssd: selectedPlan.ssd || selectedPlan.storage
             },
             createdAt: serverTimestamp(),
           });
@@ -170,12 +176,12 @@ export default function Billing() {
     } catch (err) {
       console.error("Verification Error:", err);
       setVerifying(false);
-      setError("An error occurred during payment verification. Please try again or contact support on Discord.");
+      setError("Protocol synchronization error during verification. Please contact infrastructure support on Discord.");
     }
   };
 
   const handlePlanSelect = (plan: any) => {
-    if (plan.id.startsWith('vps-')) {
+    if (plan.type === 'vps' || plan.id.startsWith('vps-')) {
       window.open("https://discord.gg/nikacloud", "_blank");
       return;
     }
@@ -190,26 +196,26 @@ export default function Billing() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-accent/10 border border-brand-accent/20 mb-4 text-brand-accent"
+          className="inline-flex items-center gap-2 px-3 py-1 border border-brand-border bg-brand-card mb-4"
         >
-          <CreditCard className="w-4 h-4" />
-          <span className="text-xs font-bold uppercase tracking-wider">Billing & Plans</span>
+          <div className="w-2 h-2 bg-brand-accent animate-pulse" />
+          <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-accent">Billing System v4.2</span>
         </motion.div>
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight"
+          className="text-4xl md:text-6xl font-bold text-white mb-4 tracking-tighter"
         >
-          Choose Your <span className="text-fiery-gradient">Power</span>
+          NETWORK <span className="text-brand-accent">NODES</span>
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="text-slate-400 max-w-2xl mx-auto"
+          className="text-slate-500 max-w-2xl mx-auto font-mono text-xs uppercase tracking-widest"
         >
-          Select a plan that fits your needs. All plans include DDoS protection, NVMe storage, and instant automated setup.
+          Select your infrastructure parameters. All nodes feature enterprise-grade DDoS mitigation and NVMe arrays.
         </motion.p>
       </div>
 
@@ -217,36 +223,38 @@ export default function Billing() {
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto mb-8 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 flex flex-col items-center gap-3"
+          className="max-w-2xl mx-auto mb-12 p-6 border border-red-500/30 bg-red-500/5 flex flex-col items-center gap-4"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 text-red-400">
             <AlertCircle className="w-5 h-5 shrink-0" />
-            <p className="text-sm font-medium">{error}</p>
+            <p className="text-xs font-mono uppercase tracking-wider">{error}</p>
           </div>
           <button 
             onClick={() => window.location.reload()}
-            className="text-xs font-bold underline hover:text-white transition-colors"
+            className="px-6 py-2 border border-red-500/50 text-red-400 text-[10px] font-mono uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"
           >
-            Retry Loading Plans
+            Re-initialize Connection
           </button>
         </motion.div>
       )}
 
       {verifying && (
-        <div className="fixed inset-0 z-[110] bg-brand-darker/80 backdrop-blur-sm flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[110] bg-brand-darker/95 backdrop-blur-sm flex items-center justify-center p-6">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="glass-panel p-8 rounded-3xl border border-slate-800 max-w-md w-full text-center"
+            className="bg-brand-card border border-brand-border p-10 max-w-md w-full text-center relative overflow-hidden"
           >
-            <div className="w-16 h-16 rounded-2xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mx-auto mb-6">
-              <ShieldCheck className="w-8 h-8 text-brand-blue animate-pulse" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-brand-accent animate-[loading_2s_linear_infinite]" />
+            <div className="w-20 h-20 border border-brand-accent/20 flex items-center justify-center mx-auto mb-8 relative">
+              <div className="absolute inset-0 border border-brand-accent animate-ping opacity-20" />
+              <ShieldCheck className="w-10 h-10 text-brand-accent" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">AI Fraud Detection Active</h3>
-            <p className="text-slate-400 text-sm mb-6">Our AI is currently analyzing your payment screenshot to verify the transaction. This usually takes 5-10 seconds.</p>
-            <div className="flex items-center justify-center gap-3 text-brand-blue font-bold">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Verifying Payment...
+            <h3 className="text-sm font-mono text-brand-accent uppercase tracking-[0.3em] mb-4">Security Analysis</h3>
+            <p className="text-slate-500 text-xs font-mono mb-8 leading-relaxed">AI-DRIVEN FRAUD DETECTION PROTOCOL IN PROGRESS. ANALYZING TRANSACTION METADATA AND VISUAL PROOF-OF-PAYMENT.</p>
+            <div className="flex items-center justify-center gap-3 text-white font-mono text-[10px] uppercase tracking-widest">
+              <Loader2 className="w-4 h-4 animate-spin text-brand-accent" />
+              Verifying Hash...
             </div>
           </motion.div>
         </div>
@@ -256,14 +264,14 @@ export default function Billing() {
         {!selectedPlan ? (
           <motion.div 
             key="plan-selection"
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            exit={{ opacity: 0, x: 10 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px bg-brand-border border border-brand-border"
           >
             {loading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-80 glass-panel rounded-3xl animate-pulse" />
+                <div key={i} className="h-96 bg-brand-card animate-pulse" />
               ))
             ) : (
               plans.map((plan: any) => (

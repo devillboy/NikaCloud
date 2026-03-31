@@ -52,7 +52,7 @@ export default function Login() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <Cloud className="w-8 h-8 text-brand-blue" />
+            <Cloud className="w-8 h-8 text-brand-accent" />
             <span className="font-bold text-2xl text-white">NikaCloud</span>
           </Link>
           <h1 className="text-3xl font-bold text-white mb-2">{isSignUp ? 'Create Account' : 'Welcome Back'}</h1>
@@ -70,7 +70,7 @@ export default function Login() {
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-brand-blue"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-brand-accent"
                 required
               />
             </div>
@@ -81,14 +81,14 @@ export default function Login() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-brand-blue"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-brand-accent"
                 required
               />
             </div>
             <button 
               type="submit"
               disabled={loading}
-              className="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
+              className="w-full bg-brand-accent hover:bg-brand-accent-bright text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
             >
               {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
             </button>
@@ -114,7 +114,7 @@ export default function Login() {
 
           <p className="text-center text-slate-400 mt-6 text-sm">
             {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-            <button onClick={() => setIsSignUp(!isSignUp)} className="text-brand-blue hover:underline font-semibold">
+            <button onClick={() => setIsSignUp(!isSignUp)} className="text-brand-accent hover:underline font-semibold">
               {isSignUp ? 'Sign In' : 'Sign Up'}
             </button>
           </p>

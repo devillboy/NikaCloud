@@ -41,7 +41,7 @@ export const ServerAnimation: React.FC = () => {
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-brand-darker overflow-hidden">
       {/* Background Glows */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-accent/10 blur-[120px] rounded-full animate-pulse" />
-      <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-brand-blue/5 blur-[100px] rounded-full" />
+      <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-brand-accent/5 blur-[100px] rounded-full" />
 
       <div className="relative z-10 w-full max-w-2xl px-6 text-center">
         <motion.div

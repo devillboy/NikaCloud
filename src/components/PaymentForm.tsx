@@ -71,8 +71,8 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ plan, onPaymentSubmitt
       className="max-w-2xl mx-auto glass-panel p-8 rounded-3xl border border-slate-800 shadow-2xl"
     >
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center">
-          <QrIcon className="w-6 h-6 text-brand-blue" />
+        <div className="w-12 h-12 rounded-xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center">
+          <QrIcon className="w-6 h-6 text-brand-accent" />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-white">Complete Your Payment</h2>
@@ -85,7 +85,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ plan, onPaymentSubmitt
           {qrCode ? (
             <div className="relative group">
               <img src={qrCode} alt="UPI QR Code" className="w-full max-w-[200px] rounded-xl shadow-lg" />
-              <div className="absolute inset-0 bg-brand-blue/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl pointer-events-none" />
+              <div className="absolute inset-0 bg-brand-accent/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl pointer-events-none" />
             </div>
           ) : (
             <div className="w-[200px] h-[200px] bg-slate-800 animate-pulse rounded-xl" />
@@ -99,7 +99,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ plan, onPaymentSubmitt
         <div className="space-y-6">
           <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
             <h3 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-green-500" /> Payment Instructions
+              <ShieldCheck className="w-4 h-4 text-brand-accent" /> Payment Instructions
             </h3>
             <ul className="text-xs text-slate-400 space-y-2">
               <li className="flex items-start gap-2">
@@ -131,7 +131,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ plan, onPaymentSubmitt
                   value={upiId}
                   onChange={(e) => setUpiId(e.target.value)}
                   required
-                  className="w-full bg-slate-900/50 border border-slate-800 rounded-xl p-3 text-white text-sm focus:border-brand-blue transition-colors"
+                  className="w-full bg-slate-900/50 border border-slate-800 rounded-xl p-3 text-white text-sm focus:border-brand-accent transition-colors"
                 />
               </div>
               <div>
@@ -142,7 +142,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ plan, onPaymentSubmitt
                   value={utrId}
                   onChange={(e) => setUtrId(e.target.value)}
                   required
-                  className="w-full bg-slate-900/50 border border-slate-800 rounded-xl p-3 text-white text-sm focus:border-brand-blue transition-colors"
+                  className="w-full bg-slate-900/50 border border-slate-800 rounded-xl p-3 text-white text-sm focus:border-brand-accent transition-colors"
                 />
               </div>
             </div>
@@ -159,7 +159,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ plan, onPaymentSubmitt
               <label 
                 htmlFor="screenshot-upload"
                 className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${
-                  preview ? 'border-brand-blue bg-brand-blue/5' : 'border-slate-800 hover:border-slate-700 bg-slate-900/30'
+                  preview ? 'border-brand-accent bg-brand-accent/5' : 'border-slate-800 hover:border-slate-700 bg-slate-900/30'
                 }`}
               >
                 {preview ? (

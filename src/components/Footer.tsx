@@ -1,4 +1,4 @@
-import { Cloud, Disc as Discord, Github, Twitter } from 'lucide-react';
+import { Disc as Discord, Github, Twitter, Terminal, Cpu } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export default function Footer() {
@@ -11,62 +11,61 @@ export default function Footer() {
   if (hideFooter) return null;
 
   return (
-    <footer className="border-t border-white/10 bg-brand-darker relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[1px] bg-gradient-to-r from-transparent via-brand-blue/50 to-transparent" />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="col-span-1 md:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <Cloud className="w-6 h-6 text-brand-blue" />
-              <span className="font-display font-bold text-xl text-white">
-                Nika<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-brand-purple">Cloud</span>
-              </span>
+    <footer className="bg-brand-darker border-t border-brand-border py-20 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-16 mb-20">
+          <div className="md:col-span-5">
+            <Link to="/" className="flex items-center gap-3 mb-8 group">
+              <div className="w-10 h-10 bg-brand-accent flex items-center justify-center group-hover:rotate-90 transition-transform duration-500">
+                <Terminal className="w-6 h-6 text-brand-darker" />
+              </div>
+              <span className="text-xl font-bold text-white tracking-tighter uppercase">Nika<span className="text-brand-accent">Cloud</span></span>
             </Link>
-            <p className="text-gray-400 text-sm max-w-sm mb-6">
-              Next-generation hosting solutions for gamers, developers, and businesses. High performance, low latency, and 24/7 support.
+            <p className="text-slate-500 font-mono text-xs leading-relaxed max-w-md mb-10 uppercase tracking-wider">
+              Next-generation infrastructure for high-performance compute. Enterprise-grade DDoS mitigation, NVMe storage arrays, and low-latency global networking.
             </p>
             <div className="flex items-center gap-4">
-              <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:border-brand-purple hover:bg-brand-purple/20 transition-all">
-                <Discord className="w-5 h-5" />
+              <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="w-10 h-10 border border-brand-border flex items-center justify-center text-slate-500 hover:text-brand-accent hover:border-brand-accent transition-all">
+                <Discord className="w-4 h-4" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:border-brand-blue hover:bg-brand-blue/20 transition-all">
-                <Twitter className="w-5 h-5" />
+              <a href="#" className="w-10 h-10 border border-brand-border flex items-center justify-center text-slate-500 hover:text-brand-accent hover:border-brand-accent transition-all">
+                <Twitter className="w-4 h-4" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:border-white/30 hover:bg-white/10 transition-all">
-                <Github className="w-5 h-5" />
+              <a href="#" className="w-10 h-10 border border-brand-border flex items-center justify-center text-slate-500 hover:text-brand-accent hover:border-brand-accent transition-all">
+                <Github className="w-4 h-4" />
               </a>
             </div>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-white mb-4">Services</h3>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#minecraft" className="hover:text-brand-blue transition-colors">Minecraft Hosting</a></li>
-              <li><a href="#vps" className="hover:text-brand-blue transition-colors">VPS Hosting</a></li>
-              <li><a href="#" className="hover:text-brand-blue transition-colors">Dedicated Servers</a></li>
-              <li><a href="#" className="hover:text-brand-blue transition-colors">Web Hosting (Soon)</a></li>
+          <div className="md:col-span-3">
+            <h3 className="text-[10px] font-mono font-bold text-white uppercase tracking-[0.3em] mb-8">Infrastructure</h3>
+            <ul className="space-y-4">
+              <li><a href="/#features" className="text-[10px] font-mono text-slate-500 hover:text-brand-accent uppercase tracking-widest transition-colors">Network Features</a></li>
+              <li><a href="/#plans" className="text-[10px] font-mono text-slate-500 hover:text-brand-accent uppercase tracking-widest transition-colors">Compute Nodes</a></li>
+              <li><a href="/billing" className="text-[10px] font-mono text-slate-500 hover:text-brand-accent uppercase tracking-widest transition-colors">Resource Billing</a></li>
+              <li><a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-slate-500 hover:text-brand-accent uppercase tracking-widest transition-colors">Status Page</a></li>
             </ul>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-white mb-4">Company</h3>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link to="/about" className="hover:text-brand-purple transition-colors">About Us</Link></li>
-              <li><a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="hover:text-brand-purple transition-colors">Contact</a></li>
-              <li><Link to="/terms" className="hover:text-brand-purple transition-colors">Terms of Service</Link></li>
-              <li><Link to="/privacy" className="hover:text-brand-purple transition-colors">Privacy Policy</Link></li>
+          <div className="md:col-span-4">
+            <h3 className="text-[10px] font-mono font-bold text-white uppercase tracking-[0.3em] mb-8">Protocol</h3>
+            <ul className="space-y-4">
+              <li><Link to="/about" className="text-[10px] font-mono text-slate-500 hover:text-brand-accent uppercase tracking-widest transition-colors">About Infrastructure</Link></li>
+              <li><Link to="/terms" className="text-[10px] font-mono text-slate-500 hover:text-brand-accent uppercase tracking-widest transition-colors">Terms of Service</Link></li>
+              <li><Link to="/privacy" className="text-[10px] font-mono text-slate-500 hover:text-brand-accent uppercase tracking-widest transition-colors">Privacy Policy</Link></li>
+              <li><a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-slate-500 hover:text-brand-accent uppercase tracking-widest transition-colors">Support Terminal</a></li>
             </ul>
           </div>
         </div>
         
-        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-gray-500 text-sm">
-            © {new Date().getFullYear()} NikaCloud Hosting. All rights reserved.
+        <div className="pt-12 border-t border-brand-border flex flex-col md:flex-row items-center justify-between gap-8">
+          <p className="text-[9px] font-mono text-slate-600 uppercase tracking-widest">
+            © {new Date().getFullYear()} NikaCloud Infrastructure. All rights reserved.
           </p>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-3 text-[9px] font-mono text-slate-600 uppercase tracking-widest">
             <span>Powered by</span>
-            <Cloud className="w-4 h-4" />
+            <Cpu className="w-3 h-3" />
+            <span>Enterprise Core</span>
           </div>
         </div>
       </div>
