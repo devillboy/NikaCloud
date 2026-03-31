@@ -16,24 +16,20 @@ export default function Home() {
     const fetchData = async () => {
       try {
         const apiBase = getApiBase();
-        const [featuresRes, botRes, mcRes, vpsRes] = await Promise.all([
+        const [featuresRes, plansRes] = await Promise.all([
           fetch(`${apiBase}/api/features`),
-          fetch(`${apiBase}/api/plans/bot`),
-          fetch(`${apiBase}/api/plans/minecraft`),
-          fetch(`${apiBase}/api/plans/vps`)
+          fetch(`${apiBase}/api/plans`)
         ]);
 
-        const [featuresData, botData, mcData, vpsData] = await Promise.all([
+        const [featuresData, plansData] = await Promise.all([
           featuresRes.json(),
-          botRes.json(),
-          mcRes.json(),
-          vpsRes.json()
+          plansRes.json()
         ]);
 
         setFeatures(featuresData);
-        setBotPlans(botData);
-        setMinecraftPlans(mcData);
-        setVpsPlans(vpsData);
+        setBotPlans(plansData.filter((p: any) => p.type === 'bot'));
+        setMinecraftPlans(plansData.filter((p: any) => p.type === 'minecraft'));
+        setVpsPlans(plansData.filter((p: any) => p.type === 'vps'));
       } catch (error) {
         console.error("Error fetching infrastructure data:", error);
         // Fallback to empty arrays to prevent UI crash
