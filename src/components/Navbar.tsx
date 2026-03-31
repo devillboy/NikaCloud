@@ -20,63 +20,53 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-brand-darker/80 backdrop-blur-md border-b border-brand-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20 items-center">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex justify-between h-24 items-center">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-brand-accent flex items-center justify-center group-hover:rotate-90 transition-transform duration-500">
-              <Terminal className="w-6 h-6 text-brand-darker" />
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center rounded-2xl group-hover:rotate-12 transition-transform duration-500 shadow-lg shadow-orange-500/20">
+              <Terminal className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tighter uppercase">Nika<span className="text-brand-accent">Cloud</span></span>
+            <span className="text-2xl font-bold text-white tracking-tight">Nika<span className="text-orange-500">Cloud</span></span>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-10">
+          <div className="hidden md:flex items-center gap-12">
             {navLinks.map((link) => (
-              link.external ? (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-brand-accent transition-colors"
-                >
-                  {link.name}
-                </a>
-              ) : (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-brand-accent transition-colors"
-                >
-                  {link.name}
-                </a>
-              )
+              <a
+                key={link.name}
+                href={link.href}
+                target={link.external ? "_blank" : undefined}
+                rel={link.external ? "noopener noreferrer" : undefined}
+                className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 hover:text-orange-500 transition-colors"
+              >
+                {link.name}
+              </a>
             ))}
             
             {user ? (
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-8">
                 <Link
                   to={isAdmin ? "/admin" : "/dashboard"}
-                  className="flex items-center gap-2 px-5 py-2 border border-brand-accent text-brand-accent text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-brand-darker transition-all"
+                  className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-white text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all"
                 >
-                  <LayoutDashboard className="w-3 h-3" />
+                  <LayoutDashboard className="w-4 h-4 text-orange-500" />
                   {isAdmin ? "Admin" : "Terminal"}
                 </Link>
                 <button 
                   onClick={() => logout()} 
-                  className="text-slate-400 hover:text-brand-accent transition-colors"
+                  className="text-gray-500 hover:text-red-500 transition-colors"
                   title="Terminate Session"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-5 h-5" />
                 </button>
               </div>
             ) : (
               <Link
                 to="/login"
-                className="flex items-center gap-2 px-5 py-2 bg-brand-accent text-brand-darker text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-white transition-all"
+                className="flex items-center gap-3 px-8 py-4 bg-orange-500 text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20"
               >
-                <LogIn className="w-3 h-3" />
+                <LogIn className="w-4 h-4" />
                 Authorize
               </Link>
             )}
@@ -101,33 +91,33 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-brand-dark border-b border-brand-border overflow-hidden"
+            className="md:hidden bg-black border-b border-white/10 overflow-hidden"
           >
-            <div className="px-4 pt-4 pb-8 space-y-4">
+            <div className="px-6 pt-4 pb-12 space-y-6">
               {navLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="block text-xs font-mono font-bold uppercase tracking-widest text-slate-400 hover:text-brand-accent"
+                  className="block text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 hover:text-orange-500"
                 >
                   {link.name}
                 </a>
               ))}
-              <div className="pt-4 border-t border-brand-border">
+              <div className="pt-6 border-t border-white/10">
                 {user ? (
                   <div className="space-y-4">
                     <Link
                       to={isAdmin ? "/admin" : "/dashboard"}
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center justify-center gap-2 w-full py-3 border border-brand-accent text-brand-accent text-xs font-mono font-bold uppercase tracking-widest"
+                      className="flex items-center justify-center gap-3 w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-white text-[10px] font-bold uppercase tracking-widest"
                     >
-                      <LayoutDashboard className="w-4 h-4" />
+                      <LayoutDashboard className="w-4 h-4 text-orange-500" />
                       {isAdmin ? "Admin Portal" : "Terminal"}
                     </Link>
                     <button
                       onClick={() => { logout(); setIsOpen(false); }}
-                      className="flex items-center justify-center gap-2 w-full py-3 border border-red-500/50 text-red-500 text-xs font-mono font-bold uppercase tracking-widest"
+                      className="flex items-center justify-center gap-3 w-full py-4 border border-red-500/30 rounded-2xl text-red-500 text-[10px] font-bold uppercase tracking-widest"
                     >
                       <LogOut className="w-4 h-4" />
                       Terminate
@@ -137,7 +127,7 @@ export default function Navbar() {
                   <Link
                     to="/login"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-brand-accent text-brand-darker text-xs font-mono font-bold uppercase tracking-widest"
+                    className="flex items-center justify-center gap-3 w-full py-4 bg-orange-500 text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest"
                   >
                     <LogIn className="w-4 h-4" />
                     Authorize

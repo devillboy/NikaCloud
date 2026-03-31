@@ -1,13 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { PlanCard } from "../components/PlanCard";
-import { PaymentForm } from "../components/PaymentForm";
-import { ServerAnimation } from "../components/ServerAnimation";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowLeft, CreditCard, LayoutDashboard, ShieldCheck, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { 
+  ArrowLeft, 
+  CreditCard, 
+  LayoutDashboard, 
+  ShieldCheck, 
+  AlertCircle, 
+  CheckCircle2, 
+  Loader2,
+  Zap,
+  Server,
+  Cpu,
+  Database,
+  HardDrive,
+  ArrowRight,
+  Bitcoin
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { GoogleGenAI } from "@google/genai";
+import { Discord } from "../components/Icons";
 
 enum OperationType {
   CREATE = 'create',
@@ -33,27 +46,27 @@ const handleFirestoreError = (error: any, operationType: OperationType, path: st
 };
 
 export default function Billing() {
-  const [plans, setPlans] = useState([]);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<'minecraft' | 'bot' | 'vps'>('minecraft');
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'crypto'>('upi');
   const [duration, setDuration] = useState(1); // in months
-  const [serverCreating, setServerCreating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<'Genuine' | 'Fake' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // UPI Form State
+  const [upiId, setUpiId] = useState("");
+  const [utrId, setUtrId] = useState("");
+  const [screenshot, setScreenshot] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        console.log("Fetching plans from /api/plans...");
         const res = await fetch("/api/plans");
-        console.log("Plans response status:", res.status);
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("Plans response error body:", text);
-          throw new Error(`Infrastructure API Error: ${res.status}. Protocol synchronization failed.`);
-        }
+        if (!res.ok) throw new Error(`Infrastructure API Error: ${res.status}`);
         const data = await res.json();
         setPlans(data);
       } catch (err: any) {
@@ -66,9 +79,27 @@ export default function Billing() {
     fetchPlans();
   }, []);
 
-  const handlePaymentSubmitted = async (screenshotBase64: string, upiId: string, utrId: string) => {
+  const filteredPlans = plans.filter(p => p.type === selectedCategory);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScreenshot(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePaymentSubmitted = async () => {
     if (!auth.currentUser) {
       setError("Authorization required. Please log in to your terminal.");
+      return;
+    }
+
+    if (paymentMethod === 'upi' && (!screenshot || !upiId || !utrId)) {
+      setError("Please fill all UPI payment details.");
       return;
     }
 
@@ -76,11 +107,9 @@ export default function Billing() {
     setError(null);
 
     try {
-      // Calculate expiry date
       const expiryDate = new Date();
       expiryDate.setMonth(expiryDate.getMonth() + duration);
 
-      // Calculate final price
       const basePrice = typeof selectedPlan.price === 'string' 
         ? parseInt(selectedPlan.price.replace(/[^0-9]/g, '')) 
         : selectedPlan.price;
@@ -88,7 +117,7 @@ export default function Billing() {
         ? Math.floor(basePrice * duration * 0.8) 
         : basePrice * duration;
 
-      // 1. Save initial payment record to Firestore
+      // 1. Save initial payment record
       let paymentRef;
       try {
         paymentRef = await addDoc(collection(db, "payments"), {
@@ -99,14 +128,10 @@ export default function Billing() {
           amount: totalPrice,
           duration,
           expiryDate: expiryDate.toISOString(),
-          upiId,
-          utrId,
-          specs: {
-            ram: selectedPlan.ram,
-            cpu: selectedPlan.cpu,
-            ssd: selectedPlan.ssd || selectedPlan.storage
-          },
-          screenshotUrl: screenshotBase64,
+          upiId: upiId || 'N/A',
+          utrId: utrId || 'N/A',
+          method: paymentMethod,
+          screenshotUrl: screenshot || '',
           status: "Pending",
           createdAt: serverTimestamp(),
         });
@@ -114,264 +139,325 @@ export default function Billing() {
         handleFirestoreError(err, OperationType.CREATE, "payments");
       }
 
-      // 2. Trigger AI Fraud Detection (Gemini)
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          {
-            inlineData: {
-              mimeType: "image/png",
-              data: screenshotBase64.split(',')[1] || screenshotBase64,
+      // 2. AI Verification (only for UPI)
+      if (paymentMethod === 'upi' && screenshot) {
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const response = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: [
+            {
+              inlineData: {
+                mimeType: "image/png",
+                data: screenshot.split(',')[1] || screenshot,
+              },
             },
-          },
-          {
-            text: `Analyze this payment screenshot for NikaCloud infrastructure. 
-            The user claims to have paid ${selectedPlan.price} for ${selectedPlan.name} Node.
-            User UPI ID: ${upiId}
-            Transaction UTR ID: ${utrId}
-            Is it a genuine payment to nikacloud@nyes? 
-            Check if the UTR ID ${utrId} and amount ${selectedPlan.price} are visible and correct in the screenshot.
-            Return ONLY 'Genuine' or 'Fake'.`,
-          },
-        ],
-      });
+            {
+              text: `Analyze this payment screenshot for NikaCloud. 
+              User claims to have paid ${selectedPlan.price} for ${selectedPlan.name}.
+              UTR ID: ${utrId}. Return ONLY 'Genuine' or 'Fake'.`,
+            },
+          ],
+        });
 
-      const result = response.text?.trim();
-      console.log("AI Verification Result:", result);
-
-      if (result === "Genuine") {
-        setVerificationResult("Genuine");
-        
-        // 3. Update payment status
-        try {
-          await updateDoc(doc(db, "payments", paymentRef.id), {
-            status: "Approved",
+        const result = response.text?.trim();
+        if (result !== "Genuine") {
+          await updateDoc(doc(db, "payments", paymentRef!.id), {
+            status: "Rejected",
+            reason: "AI detected potential fraud.",
             verifiedAt: serverTimestamp(),
           });
-        } catch (err) {
-          handleFirestoreError(err, OperationType.UPDATE, `payments/${paymentRef.id}`);
+          setVerifying(false);
+          navigate("/payment-result", { state: { status: 'failed', plan: selectedPlan } });
+          return;
         }
-
-        // 4. Create the real server record
-        try {
-          const expiryDate = new Date();
-          expiryDate.setMonth(expiryDate.getMonth() + duration);
-
-          await addDoc(collection(db, "servers"), {
-            name: `${selectedPlan.name} Node`,
-            type: selectedPlan.type === 'minecraft' ? "Minecraft" : "VPS",
-            status: "Starting",
-            ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
-            userId: auth.currentUser.uid,
-            planId: selectedPlan.id,
-            panelId: Math.floor(Math.random() * 10000).toString(),
-            specs: {
-              ram: selectedPlan.ram,
-              cpu: selectedPlan.cpu,
-              ssd: selectedPlan.ssd || selectedPlan.storage
-            },
-            duration,
-            expiresAt: expiryDate.toISOString(),
-            renewalWindowEndsAt: new Date(expiryDate.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days window
-            createdAt: serverTimestamp(),
-          });
-        } catch (err) {
-          handleFirestoreError(err, OperationType.CREATE, "servers");
-        }
-
-        setVerifying(false);
-        navigate("/payment-result", { state: { status: 'success', plan: selectedPlan } });
-
-      } else {
-        setVerificationResult("Fake");
-        await updateDoc(doc(db, "payments", paymentRef.id), {
-          status: "Rejected",
-          reason: "AI detected potential fraud or incorrect payment details.",
-          verifiedAt: serverTimestamp(),
-        });
-        setVerifying(false);
-        navigate("/payment-result", { state: { status: 'failed', plan: selectedPlan } });
       }
+
+      // 3. Approve and Create Server
+      await updateDoc(doc(db, "payments", paymentRef!.id), {
+        status: "Approved",
+        verifiedAt: serverTimestamp(),
+      });
+
+      await addDoc(collection(db, "servers"), {
+        name: `${selectedPlan.name} Node`,
+        type: selectedPlan.type,
+        status: "Starting",
+        ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
+        userId: auth.currentUser.uid,
+        planId: selectedPlan.id,
+        specs: {
+          ram: selectedPlan.ram,
+          cpu: selectedPlan.cpu,
+          ssd: selectedPlan.ssd || selectedPlan.storage
+        },
+        duration,
+        expiresAt: expiryDate.toISOString(),
+        createdAt: serverTimestamp(),
+      });
+
+      setVerifying(false);
+      navigate("/payment-result", { state: { status: 'success', plan: selectedPlan } });
 
     } catch (err) {
       console.error("Verification Error:", err);
       setVerifying(false);
-      setError("Protocol synchronization error during verification. Please contact infrastructure support on Discord.");
+      setError("Payment processing error. Please contact support on Discord.");
     }
   };
-
-  const handlePlanSelect = (plan: any) => {
-    if (plan.type === 'vps' || plan.id.startsWith('vps-')) {
-      window.open("https://discord.gg/nikacloud", "_blank");
-      return;
-    }
-    setSelectedPlan(plan);
-  };
-
-  if (serverCreating) return <ServerAnimation />;
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div className="mb-12 text-center">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-3 py-1 border border-brand-border bg-brand-card mb-4"
-        >
-          <div className="w-2 h-2 bg-brand-accent animate-pulse" />
-          <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-accent">Billing System</span>
-        </motion.div>
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-4xl md:text-6xl font-bold text-white mb-4 tracking-tighter"
-        >
-          BUY YOUR <span className="text-brand-accent">SERVER</span>
-        </motion.h1>
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-slate-500 max-w-2xl mx-auto font-mono text-xs uppercase tracking-widest"
-        >
-          Select your plan. Get 20% OFF on Yearly plans!
-        </motion.p>
+    <div className="min-h-screen bg-black text-white pt-32 pb-20">
+      <div className="container mx-auto px-6">
+        <div className="max-w-6xl mx-auto">
+          
+          <div className="flex flex-col md:flex-row gap-12">
+            
+            {/* Left Column: Selection */}
+            <div className="flex-1">
+              <div className="mb-10">
+                <h1 className="text-4xl font-bold mb-4">Configure Your <span className="text-orange-500">Node</span></h1>
+                <p className="text-gray-400">Select your service category and plan to begin deployment.</p>
+              </div>
+              
+              {/* Category Selection */}
+              <div className="flex flex-wrap gap-3 mb-10">
+                {[
+                  { id: 'minecraft', name: 'Minecraft', icon: <Zap className="w-4 h-4" /> },
+                  { id: 'bot', name: 'Bot Hosting', icon: <Discord className="w-4 h-4" /> },
+                  { id: 'vps', name: 'VPS', icon: <Server className="w-4 h-4" /> },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedCategory(cat.id as any);
+                      setSelectedPlan(null);
+                    }}
+                    className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-bold transition-all ${
+                      selectedCategory === cat.id 
+                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' 
+                        : 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'
+                    }`}
+                  >
+                    {cat.icon}
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Plan Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-32 bg-white/5 animate-pulse rounded-3xl" />
+                  ))
+                ) : (
+                  filteredPlans.map((plan) => (
+                    <button
+                      key={plan.id}
+                      onClick={() => setSelectedPlan(plan)}
+                      className={`p-6 rounded-3xl border text-left transition-all ${
+                        selectedPlan?.id === plan.id
+                          ? 'bg-orange-500/10 border-orange-500 shadow-lg shadow-orange-500/10'
+                          : 'bg-white/5 border-white/10 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="text-sm font-bold text-gray-400 mb-1">{plan.name}</div>
+                      <div className="text-2xl font-bold mb-4">{plan.price}<span className="text-xs text-gray-500 font-normal">/mo</span></div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="text-[10px] px-2 py-1 bg-white/5 rounded-lg text-gray-300 uppercase tracking-wider">{plan.ram} RAM</span>
+                        <span className="text-[10px] px-2 py-1 bg-white/5 rounded-lg text-gray-300 uppercase tracking-wider">{plan.cpu || plan.cores} CPU</span>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+
+              {/* Payment Method */}
+              {selectedPlan && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                  <h3 className="text-xl font-bold mb-6">Payment Method</h3>
+                  <div className="grid grid-cols-3 gap-4 mb-12">
+                    {[
+                      { id: 'upi', name: 'UPI / QR', icon: <Zap className="w-5 h-5" /> },
+                      { id: 'card', name: 'Card', icon: <CreditCard className="w-5 h-5" /> },
+                      { id: 'crypto', name: 'Crypto', icon: <Bitcoin className="w-5 h-5" /> },
+                    ].map((method) => (
+                      <button
+                        key={method.id}
+                        onClick={() => setPaymentMethod(method.id as any)}
+                        className={`flex flex-col items-center gap-3 p-6 rounded-3xl border transition-all ${
+                          paymentMethod === method.id
+                            ? 'bg-orange-500/10 border-orange-500'
+                            : 'bg-white/5 border-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        <div className={`${paymentMethod === method.id ? 'text-orange-500' : 'text-gray-400'}`}>
+                          {method.icon}
+                        </div>
+                        <span className="text-xs font-bold uppercase tracking-widest">{method.name}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {paymentMethod === 'upi' && (
+                    <div className="p-8 rounded-[2rem] bg-white/5 border border-white/10 space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-bold text-orange-500 uppercase tracking-widest mb-1">Scan to Pay</div>
+                          <div className="text-xl font-bold">nikacloud@nyes</div>
+                        </div>
+                        <div className="w-24 h-24 bg-white p-2 rounded-xl">
+                          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=nikacloud@nyes" alt="QR" />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input
+                          type="text"
+                          placeholder="Your UPI ID"
+                          value={upiId}
+                          onChange={(e) => setUpiId(e.target.value)}
+                          className="w-full px-6 py-4 bg-black border border-white/10 rounded-2xl focus:border-orange-500 outline-none transition-all"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Transaction UTR ID"
+                          value={utrId}
+                          onChange={(e) => setUtrId(e.target.value)}
+                          className="w-full px-6 py-4 bg-black border border-white/10 rounded-2xl focus:border-orange-500 outline-none transition-all"
+                        />
+                      </div>
+
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          className="hidden"
+                          id="screenshot-upload"
+                        />
+                        <label
+                          htmlFor="screenshot-upload"
+                          className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-white/10 rounded-3xl cursor-pointer hover:border-orange-500/50 transition-all"
+                        >
+                          {screenshot ? (
+                            <img src={screenshot} alt="Preview" className="h-32 rounded-xl" />
+                          ) : (
+                            <>
+                              <ShieldCheck className="w-8 h-8 text-gray-500" />
+                              <span className="text-sm text-gray-400">Upload Payment Screenshot</span>
+                            </>
+                          )}
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentMethod !== 'upi' && (
+                    <div className="p-12 rounded-[2rem] bg-white/5 border border-white/10 text-center">
+                      <AlertCircle className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+                      <h4 className="text-xl font-bold mb-2">Automated Gateway Offline</h4>
+                      <p className="text-gray-400 text-sm mb-6">Card and Crypto payments are currently processed manually via Discord.</p>
+                      <a href="https://discord.gg/nikacloud" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-black rounded-xl font-bold hover:bg-orange-500 hover:text-white transition-all">
+                        Contact Support
+                      </a>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </div>
+
+            {/* Right Column: Summary */}
+            <div className="w-full md:w-96">
+              <div className="sticky top-32 p-8 rounded-[2.5rem] bg-white/5 border border-white/10">
+                <h3 className="text-xl font-bold mb-8">Order Summary</h3>
+                
+                {selectedPlan ? (
+                  <div className="space-y-6">
+                    <div className="pb-6 border-b border-white/10">
+                      <div className="text-sm text-gray-400 mb-1">{selectedCategory.toUpperCase()} NODE</div>
+                      <div className="text-2xl font-bold">{selectedPlan.name}</div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Billing Cycle</span>
+                        <span className="text-white">Monthly</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Payment Method</span>
+                        <span className="text-white uppercase">{paymentMethod}</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-6 border-t border-white/10">
+                      <div className="flex justify-between items-end mb-8">
+                        <span className="text-gray-400">Total Due</span>
+                        <span className="text-3xl font-bold text-orange-500">{selectedPlan.price}</span>
+                      </div>
+                      
+                      <button
+                        onClick={handlePaymentSubmitted}
+                        disabled={verifying || (paymentMethod === 'upi' && !screenshot)}
+                        className="w-full py-5 bg-orange-500 rounded-2xl font-bold text-lg hover:bg-orange-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {verifying ? (
+                          <Loader2 className="w-6 h-6 animate-spin" />
+                        ) : (
+                          <>
+                            Complete Order
+                            <ArrowRight className="w-5 h-5" />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-20 text-center">
+                    <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6">
+                      <Zap className="w-8 h-8 text-gray-600" />
+                    </div>
+                    <p className="text-gray-500 font-medium">Select a plan to continue</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
 
-      {!selectedPlan && (
-        <div className="max-w-4xl mx-auto mb-12 flex flex-col md:flex-row items-center justify-center gap-6">
-          <div className="text-sm font-mono text-slate-400 uppercase tracking-widest">Select Duration:</div>
-          <div className="flex bg-brand-card border border-brand-border p-1 rounded-xl">
-            {[
-              { label: '1 Month', value: 1 },
-              { label: '1 Year (20% OFF)', value: 12 },
-              { label: '2 Years (20% OFF)', value: 24 }
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setDuration(opt.value)}
-                className={`px-6 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
-                  duration === opt.value 
-                    ? 'bg-brand-accent text-brand-darker' 
-                    : 'text-slate-500 hover:text-white'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto mb-12 p-6 border border-red-500/30 bg-red-500/5 flex flex-col items-center gap-4"
-        >
-          <div className="flex items-center gap-3 text-red-400">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <p className="text-xs font-mono uppercase tracking-wider">{error}</p>
-          </div>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-6 py-2 border border-red-500/50 text-red-400 text-[10px] font-mono uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"
+      {/* Verification Overlay */}
+      <AnimatePresence>
+        {verifying && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md"
           >
-            Try Again
-          </button>
-        </motion.div>
-      )}
-
-      {verifying && (
-        <div className="fixed inset-0 z-[110] bg-brand-darker/95 backdrop-blur-sm flex items-center justify-center p-6">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-brand-card border border-brand-border p-10 max-w-md w-full text-center relative overflow-hidden"
-          >
-            <div className="absolute top-0 left-0 w-full h-1 bg-brand-accent animate-[loading_2s_linear_infinite]" />
-            <div className="w-20 h-20 border border-brand-accent/20 flex items-center justify-center mx-auto mb-8 relative">
-              <div className="absolute inset-0 border border-brand-accent animate-ping opacity-20" />
-              <ShieldCheck className="w-10 h-10 text-brand-accent" />
+            <div className="text-center max-w-md">
+              <div className="w-24 h-24 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-8" />
+              <h2 className="text-3xl font-bold mb-4">AI Verification in Progress</h2>
+              <p className="text-gray-400 font-mono text-sm uppercase tracking-widest">
+                Analyzing transaction screenshot and cross-referencing UTR ID...
+              </p>
             </div>
-            <h3 className="text-sm font-mono text-brand-accent uppercase tracking-[0.3em] mb-4">Checking Payment</h3>
-            <p className="text-slate-500 text-xs font-mono mb-8 leading-relaxed">AI IS CHECKING YOUR PAYMENT. PLEASE WAIT WHILE WE VERIFY YOUR TRANSACTION.</p>
-            <div className="flex items-center justify-center gap-3 text-white font-mono text-[10px] uppercase tracking-widest">
-              <Loader2 className="w-4 h-4 animate-spin text-brand-accent" />
-              Verifying...
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-      <AnimatePresence mode="wait">
-        {!selectedPlan ? (
-          <motion.div 
-            key="plan-selection"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px bg-brand-border border border-brand-border"
-          >
-            {loading ? (
-              Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-96 bg-brand-card animate-pulse" />
-              ))
-            ) : (
-              plans.map((plan: any) => {
-                const basePrice = typeof plan.price === 'string' 
-                  ? parseInt(plan.price.replace(/[^0-9]/g, '')) 
-                  : plan.price;
-                const displayPrice = duration >= 12 
-                  ? Math.floor(basePrice * duration * 0.8) 
-                  : basePrice * duration;
-                
-                return (
-                  <PlanCard 
-                    key={plan.id} 
-                    plan={{...plan, price: `₹${displayPrice}`, originalPrice: basePrice}} 
-                    onSelect={handlePlanSelect} 
-                    duration={duration}
-                  />
-                );
-              })
-            )}
-          </motion.div>
-        ) : (
-          <motion.div 
-            key="payment-form"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
-          >
-            <button 
-              onClick={() => setSelectedPlan(null)}
-              className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back to Plans
-            </button>
-            <PaymentForm 
-              plan={selectedPlan} 
-              onPaymentSubmitted={(base64, upi, utr) => handlePaymentSubmitted(base64, upi, utr)} 
-            />
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="mt-20 flex flex-col items-center gap-6">
-        <div className="h-px w-full max-w-md bg-gradient-to-r from-transparent via-slate-800 to-transparent" />
-        <div className="flex items-center gap-8">
-          <Link to="/dashboard" className="text-slate-400 hover:text-white flex items-center gap-2 text-sm transition-colors">
-            <LayoutDashboard className="w-4 h-4" /> Go to Dashboard
-          </Link>
-          <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white flex items-center gap-2 text-sm transition-colors">
-            Need Help? Join Discord
-          </a>
+      {error && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[110] w-full max-w-md px-6">
+          <div className="p-4 bg-red-500 text-white rounded-2xl shadow-2xl flex items-center gap-4">
+            <AlertCircle className="w-6 h-6 shrink-0" />
+            <p className="text-sm font-bold">{error}</p>
+            <button onClick={() => setError(null)} className="ml-auto text-white/50 hover:text-white">
+              ✕
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

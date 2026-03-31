@@ -1,130 +1,166 @@
 import { motion } from 'motion/react';
-import { ChevronRight, Cpu, Globe, Shield, Zap, Server, Gamepad2, HardDrive, Clock, Disc as Discord, CheckCircle2, Gift, Database, ArrowRight, Terminal, Activity } from 'lucide-react';
+import { ChevronRight, Cpu, Globe, Shield, Zap, Server, Gamepad2, HardDrive, Clock, CheckCircle2, Gift, Database, ArrowRight, Terminal, Activity } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Discord } from '../components/Icons';
 
 export default function Home() {
   return (
-    <div className="relative w-full overflow-hidden bg-brand-darker">
-      {/* Technical Grid Background */}
-      <div className="fixed inset-0 technical-grid opacity-20 pointer-events-none" />
-
+    <div className="relative w-full overflow-hidden bg-black text-white">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-3 px-3 py-1 border border-brand-border bg-brand-card mb-8">
-              <div className="w-2 h-2 bg-brand-accent animate-pulse" />
-              <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-accent">System Status: Optimal</span>
-            </div>
-            
-            <motion.h1 
-              className="text-6xl lg:text-8xl font-bold tracking-tighter mb-8 leading-[0.85] text-white"
+      <section className="relative pt-32 pb-20 overflow-hidden">
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="max-w-4xl">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-bold tracking-widest mb-6"
             >
-              HIGH <span className="text-brand-accent">VELOCITY</span> <br />
-              INFRASTRUCTURE
+              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+              ENTERPRISE-GRADE INFRASTRUCTURE
+            </motion.div>
+            
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-6xl md:text-8xl font-bold tracking-tight mb-6 leading-[0.9]"
+            >
+              Next-Gen <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600">
+                Cloud Hosting
+              </span>
             </motion.h1>
             
-            <motion.p 
-              className="text-lg text-slate-500 mb-10 max-w-xl font-mono uppercase tracking-widest leading-relaxed"
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-xl text-gray-400 mb-10 max-w-2xl leading-relaxed"
             >
-              Enterprise-grade hardware nodes. Zero-latency backbone. Professional-tier deployment for critical workloads.
+              Experience the pinnacle of performance. Enterprise-grade hardware, 
+              zero-lag infrastructure, and professional-grade support.
             </motion.p>
-
-            <div className="flex flex-wrap items-center gap-4">
-              <Link to="/claim-free-server" className="px-8 py-4 bg-brand-accent text-brand-darker font-bold text-xs uppercase tracking-[0.2em] hover:bg-white transition-colors flex items-center gap-3">
-                <Terminal className="w-4 h-4" />
-                Get Free Server
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex flex-wrap gap-4"
+            >
+              <Link
+                to="/dashboard"
+                className="px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full font-semibold text-white hover:shadow-lg hover:shadow-orange-500/25 transition-all flex items-center gap-2 group"
+              >
+                <Zap className="w-5 h-5 fill-current" />
+                Claim Free Server
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <a href="#plans" className="px-8 py-4 border border-brand-border text-white font-bold text-xs uppercase tracking-[0.2em] hover:bg-brand-border transition-colors">
-                View Plans
+              <a
+                href="#plans"
+                className="px-8 py-4 bg-white/5 border border-white/10 rounded-full font-semibold text-white hover:bg-white/10 transition-all"
+              >
+                Explore Plans
               </a>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
-          {/* Technical Hero Element */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="hidden lg:block relative"
+      {/* Free Tier Callout */}
+      <section className="py-20">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="relative p-12 rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-orange-900/40 to-black border border-orange-500/20"
           >
-            <div className="bg-brand-card border border-brand-border p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-16 h-16 border-t border-r border-brand-accent/30" />
-              
-              <div className="flex justify-between items-start mb-12">
-                <div className="space-y-1">
-                  <div className="text-[10px] font-mono text-brand-accent uppercase tracking-widest">Node Identifier</div>
-                  <div className="text-xl font-bold text-white">NIKA-CORE-01</div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
+              <div className="max-w-xl">
+                <div className="inline-block px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-[10px] font-bold uppercase tracking-wider mb-6">
+                  LIMITED TIME OFFER
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1 border border-brand-accent/20 text-brand-accent text-[10px] font-mono uppercase">
-                  <Activity className="w-3 h-3 animate-pulse" />
-                  Live Stream
-                </div>
-              </div>
-
-              <div className="space-y-8">
-                <div className="space-y-3">
-                  <div className="flex justify-between text-[10px] font-mono uppercase tracking-wider">
-                    <span className="text-slate-500">Compute Load</span>
-                    <span className="text-white">42.8%</span>
+                <h2 className="text-4xl md:text-5xl font-bold mb-4">Get a Free Minecraft Server</h2>
+                <p className="text-gray-400 text-lg mb-8">
+                  Start your community today with our powerful free tier. No credit card required. Instant automated setup.
+                </p>
+                <div className="flex flex-wrap gap-6">
+                  <div className="flex items-center gap-2 text-sm text-gray-300">
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                      <Cpu className="w-4 h-4 text-orange-500" />
+                    </div>
+                    100% CPU
                   </div>
-                  <div className="h-1 w-full bg-brand-border overflow-hidden">
-                    <motion.div 
-                      initial={{ width: "0%" }}
-                      animate={{ width: "42.8%" }}
-                      className="h-full bg-brand-accent" 
-                    />
+                  <div className="flex items-center gap-2 text-sm text-gray-300">
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                      <Database className="w-4 h-4 text-orange-500" />
+                    </div>
+                    5GB RAM
                   </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between text-[10px] font-mono uppercase tracking-wider">
-                    <span className="text-slate-500">Memory Allocation</span>
-                    <span className="text-white">12.4 GB / 32 GB</span>
-                  </div>
-                  <div className="h-1 w-full bg-brand-border overflow-hidden">
-                    <motion.div 
-                      initial={{ width: "0%" }}
-                      animate={{ width: "38.7%" }}
-                      className="h-full bg-brand-accent" 
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-brand-border">
-                  <div className="space-y-1">
-                    <div className="text-[9px] font-mono text-slate-500 uppercase tracking-wider">Uptime</div>
-                    <div className="text-xs font-mono text-white">99.998%</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-[9px] font-mono text-slate-500 uppercase tracking-wider">Latency</div>
-                    <div className="text-xs font-mono text-white">0.42ms</div>
+                  <div className="flex items-center gap-2 text-sm text-gray-300">
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                      <Server className="w-4 h-4 text-orange-500" />
+                    </div>
+                    10GB NVMe
                   </div>
                 </div>
               </div>
+              <Link
+                to="/dashboard"
+                className="px-10 py-5 bg-white text-black rounded-2xl font-bold text-lg hover:bg-orange-50 transition-all flex items-center gap-3 group"
+              >
+                Claim Now
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
           </motion.div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-24 relative z-10 border-y border-brand-border bg-brand-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-px bg-brand-border border border-brand-border">
+      <section className="py-32">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Why Choose NikaCloud?</h2>
+            <p className="text-gray-400 text-lg">
+              We provide an enterprise-grade ecosystem designed for ultimate performance, reliability, and scale.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: Zap, title: "MAXIMUM VELOCITY", desc: "Powered by enterprise NVMe arrays and high-frequency compute nodes for zero-latency execution." },
-              { icon: Shield, title: "HARDENED SECURITY", desc: "Multi-layer DDoS mitigation protocols active at the edge. Automated threat neutralization." },
-              { icon: Globe, title: "GLOBAL BACKBONE", desc: "Tier-1 network topology ensuring deterministic routing and minimal hop counts worldwide." }
+              {
+                icon: <Zap className="w-8 h-8 text-orange-500" />,
+                title: "Lightning Fast",
+                description: "Powered by the latest NVMe SSDs and high-clock CPUs for zero-lag performance."
+              },
+              {
+                icon: <Shield className="w-8 h-8 text-orange-500" />,
+                title: "DDoS Protection",
+                description: "Enterprise-grade mitigation to keep your servers online 24/7, automatically."
+              },
+              {
+                icon: <Globe className="w-8 h-8 text-orange-500" />,
+                title: "Global Network",
+                description: "Premium tier-1 blend network ensuring low latency across the globe."
+              }
             ].map((feature, i) => (
-              <div key={i} className="bg-brand-card p-10 group hover:bg-brand-darker transition-colors">
-                <feature.icon className="w-8 h-8 text-brand-accent mb-8 group-hover:scale-110 transition-transform" />
-                <h3 className="text-sm font-mono font-bold mb-4 text-white uppercase tracking-[0.2em]">{feature.title}</h3>
-                <p className="text-xs font-mono text-slate-500 leading-relaxed uppercase tracking-wider">{feature.desc}</p>
-              </div>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="p-10 rounded-3xl bg-white/5 border border-white/10 hover:border-orange-500/30 transition-all group"
+              >
+                <div className="mb-8 group-hover:scale-110 transition-transform duration-500">
+                  {feature.icon}
+                </div>
+                <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
+                <p className="text-gray-400 leading-relaxed">{feature.description}</p>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -132,16 +168,82 @@ export default function Home() {
 
       {/* Pricing Sections */}
       <section id="plans" className="py-24 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-6">
           
+          {/* Bot Host Plans */}
+          <div id="bot" className="mb-32">
+            <div className="flex flex-col mb-16">
+              <div className="inline-flex items-center gap-2 text-orange-500 text-[10px] font-bold tracking-[0.4em] mb-4">
+                <Discord className="w-4 h-4" />
+                BOT HOSTING PLANS
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold">High Performance <span className="text-orange-500">Bot Nodes</span></h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[
+                { id: "bot-1", name: "Bot Host Plan 1", price: "₹35", ram: "2 GB", ssd: "8 GB", cpu: "50%", ports: 1, backups: 1 },
+                { id: "bot-2", name: "Bot Host Plan 2", price: "₹70", ram: "4 GB", ssd: "15 GB", cpu: "100%", ports: 2, backups: 1 },
+                { id: "bot-3", name: "Bot Host Plan 3", price: "₹105", ram: "6 GB", ssd: "30 GB", cpu: "150%", ports: 2, backups: 2 },
+                { id: "bot-4", name: "Bot Host Plan 4", price: "₹140", ram: "8 GB", ssd: "45 GB", cpu: "200%", ports: 3, backups: 3 },
+                { id: "bot-5", name: "Bot Host Plan 5", price: "₹175", ram: "10 GB", ssd: "60 GB", cpu: "300%", ports: 4, backups: 4 },
+                { id: "bot-6", name: "Bot Host Plan 6", price: "₹210", ram: "12 GB", ssd: "80 GB", cpu: "400%", ports: 6, backups: 5 },
+                { id: "bot-7", name: "Bot Host Plan 7", price: "₹245", ram: "16 GB", ssd: "100 GB", cpu: "600%", ports: 8, backups: 6 },
+                { id: "bot-8", name: "Bot Host Plan 8", price: "₹280", ram: "24 GB", ssd: "150 GB", cpu: "850%", ports: 10, backups: 10, popular: true },
+                { id: "bot-9", name: "Bot Host Plan 9", price: "₹315", ram: "32 GB", ssd: "200 GB", cpu: "1000%", ports: 12, backups: 12 },
+                { id: "bot-10", name: "Bot Host Plan 10", price: "₹350", ram: "64 GB", ssd: "400 GB", cpu: "2000%", ports: 24, backups: 24 }
+              ].map((plan, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`p-8 rounded-[2rem] bg-white/5 border transition-all group relative ${plan.popular ? 'border-orange-500/50 ring-1 ring-orange-500/20' : 'border-white/10 hover:border-orange-500/30'}`}
+                >
+                  {plan.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-1 rounded-full">
+                      Most Popular
+                    </div>
+                  )}
+                  <div className="text-sm font-bold text-gray-400 mb-2">{plan.name}</div>
+                  <div className="text-3xl font-bold text-white mb-6">{plan.price}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
+                  
+                  <div className="space-y-4 mb-8">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">RAM</span>
+                      <span className="text-white font-semibold">{plan.ram}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">NVMe SSD</span>
+                      <span className="text-white font-semibold">{plan.ssd}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">CPU</span>
+                      <span className="text-white font-semibold">{plan.cpu}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Ports</span>
+                      <span className="text-white font-semibold">{plan.ports}</span>
+                    </div>
+                  </div>
+                  
+                  <Link to="/billing" className="block w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-center text-sm font-bold text-white hover:bg-orange-500 hover:border-orange-500 hover:text-white transition-all">
+                    Buy Now
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
           {/* Minecraft Plans */}
           <div id="minecraft" className="mb-32">
             <div className="flex flex-col mb-16">
-              <div className="text-[10px] font-mono text-brand-accent uppercase tracking-[0.4em] mb-4">Service Category: 01</div>
-              <h2 className="text-4xl font-bold text-white tracking-tighter">GAME HOSTING <span className="text-brand-accent">NODES</span></h2>
+              <div className="text-orange-500 text-[10px] font-bold tracking-[0.4em] mb-4 uppercase">Service Category: Minecraft</div>
+              <h2 className="text-4xl md:text-5xl font-bold">Game Hosting <span className="text-orange-500">Nodes</span></h2>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px bg-brand-border border border-brand-border">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[
                 { name: "Plan 1", price: "₹99", ram: "2 GB", ssd: "8 GB", cpu: "50%" },
                 { name: "Plan 2", price: "₹199", ram: "4 GB", ssd: "15 GB", cpu: "100%" },
@@ -154,34 +256,36 @@ export default function Home() {
                 { name: "Plan 9", price: "₹899", ram: "32 GB", ssd: "200 GB", cpu: "1000%" },
                 { name: "Plan 10", price: "₹999", ram: "64 GB", ssd: "400 GB", cpu: "2000%", popular: true }
               ].map((plan, i) => (
-                <div key={i} className="bg-brand-card p-8 relative group">
-                  {plan.popular && (
-                    <div className="absolute top-0 right-0 bg-brand-accent text-brand-darker text-[8px] font-bold uppercase tracking-widest px-3 py-1">
-                      High Demand
-                    </div>
-                  )}
-                  <div className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">Node {plan.name}</div>
-                  <div className="text-2xl font-bold text-white mb-6 tracking-tight">{plan.price}<span className="text-xs text-slate-500 font-normal">/mo</span></div>
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`p-8 rounded-[2rem] bg-white/5 border transition-all group relative ${plan.popular ? 'border-orange-500/50 ring-1 ring-orange-500/20' : 'border-white/10 hover:border-orange-500/30'}`}
+                >
+                  <div className="text-sm font-bold text-gray-400 mb-2">Node {plan.name}</div>
+                  <div className="text-3xl font-bold text-white mb-6">{plan.price}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
                   
                   <div className="space-y-4 mb-8">
-                    <div className="flex justify-between text-[10px] font-mono">
-                      <span className="text-slate-500">RAM</span>
-                      <span className="text-brand-accent">{plan.ram}</span>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">RAM</span>
+                      <span className="text-white font-semibold">{plan.ram}</span>
                     </div>
-                    <div className="flex justify-between text-[10px] font-mono">
-                      <span className="text-slate-500">SSD</span>
-                      <span className="text-brand-accent">{plan.ssd}</span>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">SSD</span>
+                      <span className="text-white font-semibold">{plan.ssd}</span>
                     </div>
-                    <div className="flex justify-between text-[10px] font-mono">
-                      <span className="text-slate-500">CPU</span>
-                      <span className="text-brand-accent">{plan.cpu}</span>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">CPU</span>
+                      <span className="text-white font-semibold">{plan.cpu}</span>
                     </div>
                   </div>
                   
-                  <Link to="/billing" className="block w-full py-3 border border-brand-border text-center text-[10px] font-bold uppercase tracking-widest text-white hover:bg-brand-accent hover:text-brand-darker hover:border-brand-accent transition-all">
+                  <Link to="/billing" className="block w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-center text-sm font-bold text-white hover:bg-orange-500 hover:border-orange-500 hover:text-white transition-all">
                     Buy Now
                   </Link>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -189,11 +293,11 @@ export default function Home() {
           {/* VPS Plans */}
           <div id="vps">
             <div className="flex flex-col mb-16">
-              <div className="text-[10px] font-mono text-brand-accent uppercase tracking-[0.4em] mb-4">Service Category: 02</div>
-              <h2 className="text-4xl font-bold text-white tracking-tighter">VIRTUAL <span className="text-brand-accent">PRIVATE</span> SERVERS</h2>
+              <div className="text-orange-500 text-[10px] font-bold tracking-[0.4em] mb-4 uppercase">Service Category: VPS</div>
+              <h2 className="text-4xl md:text-5xl font-bold">Virtual <span className="text-orange-500">Private</span> Servers</h2>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-px bg-brand-border border border-brand-border">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
                 { name: "VPS 1", price: "₹699", cores: "2 vCore", ram: "8 GB", storage: "48 GB" },
                 { name: "VPS 2", price: "₹1,399", cores: "4 vCore", ram: "16 GB", storage: "96 GB" },
@@ -201,26 +305,33 @@ export default function Home() {
                 { name: "VPS 4", price: "₹2,999", cores: "8 vCore", ram: "32 GB", storage: "128 GB" },
                 { name: "VPS 5", price: "₹4,699", cores: "16 vCore", ram: "64 GB", storage: "256 GB", popular: true }
               ].map((plan, i) => (
-                <div key={i} className="bg-brand-card p-10 relative group">
-                  <div className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">{plan.name}</div>
-                  <div className="text-3xl font-bold text-white mb-8 tracking-tight">{plan.price}<span className="text-xs text-slate-500 font-normal">/mo</span></div>
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className={`p-10 rounded-[2.5rem] bg-white/5 border transition-all group relative ${plan.popular ? 'border-orange-500/50 ring-1 ring-orange-500/20' : 'border-white/10 hover:border-orange-500/30'}`}
+                >
+                  <div className="text-sm font-bold text-gray-400 mb-2">{plan.name}</div>
+                  <div className="text-4xl font-bold text-white mb-8 tracking-tight">{plan.price}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
                   
-                  <div className="space-y-4 mb-10">
-                    <div className="flex items-center gap-3 text-[11px] font-mono text-slate-300">
-                      <Cpu className="w-4 h-4 text-brand-accent" /> {plan.cores}
+                  <div className="space-y-5 mb-10">
+                    <div className="flex items-center gap-4 text-gray-300">
+                      <Cpu className="w-5 h-5 text-orange-500" /> {plan.cores}
                     </div>
-                    <div className="flex items-center gap-3 text-[11px] font-mono text-slate-300">
-                      <CheckCircle2 className="w-4 h-4 text-brand-accent" /> {plan.ram} RAM
+                    <div className="flex items-center gap-4 text-gray-300">
+                      <CheckCircle2 className="w-5 h-5 text-orange-500" /> {plan.ram} RAM
                     </div>
-                    <div className="flex items-center gap-3 text-[11px] font-mono text-slate-300">
-                      <HardDrive className="w-4 h-4 text-brand-accent" /> {plan.storage} NVMe
+                    <div className="flex items-center gap-4 text-gray-300">
+                      <HardDrive className="w-5 h-5 text-orange-500" /> {plan.storage} NVMe
                     </div>
                   </div>
                   
-                  <Link to="/billing" className="block w-full py-4 bg-brand-dark border border-brand-border text-center text-[10px] font-bold uppercase tracking-widest text-white hover:border-brand-accent transition-all">
+                  <Link to="/billing" className="block w-full py-5 rounded-3xl bg-white/5 border border-white/10 text-center text-sm font-bold text-white hover:bg-orange-500 hover:border-orange-500 transition-all">
                     Buy Now
                   </Link>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -229,19 +340,26 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 relative z-10 bg-brand-dark border-t border-brand-border">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-3 px-3 py-1 border border-brand-border bg-brand-card mb-8">
-            <Discord className="w-4 h-4 text-brand-accent" />
-            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-accent">Community Access</span>
-          </div>
-          <h2 className="text-5xl font-bold mb-8 text-white tracking-tighter">JOIN THE <span className="text-brand-accent">NETWORK</span></h2>
-          <p className="text-slate-500 mb-12 max-w-2xl mx-auto font-mono text-xs uppercase tracking-[0.2em] leading-relaxed">
-            Connect with our engineering team and community. Access exclusive deployment protocols and real-time support.
-          </p>
-          <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-4 px-12 py-5 bg-white text-brand-darker font-bold text-xs uppercase tracking-[0.3em] hover:bg-brand-accent transition-colors">
-            Authorize Discord Connection
-          </a>
+      <section className="py-32 relative z-10">
+        <div className="container mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-4xl mx-auto p-16 rounded-[3rem] bg-gradient-to-b from-white/5 to-transparent border border-white/10"
+          >
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-brand-accent/10 border border-brand-accent/20 text-brand-accent text-xs font-bold uppercase tracking-widest mb-8">
+              <Discord className="w-4 h-4" />
+              Community Access
+            </div>
+            <h2 className="text-5xl md:text-6xl font-bold mb-8">Join the <span className="text-orange-500">Network</span></h2>
+            <p className="text-gray-400 mb-12 max-w-2xl mx-auto text-lg leading-relaxed">
+              Connect with our engineering team and community. Access exclusive deployment protocols and real-time support.
+            </p>
+            <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-4 px-12 py-5 bg-white text-black rounded-2xl font-bold text-lg hover:bg-orange-500 hover:text-white transition-all">
+              Authorize Discord Connection
+            </a>
+          </motion.div>
         </div>
       </section>
     </div>
