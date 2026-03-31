@@ -1,4 +1,6 @@
+console.log("SERVER.TS STARTING...");
 import express from "express";
+console.log("SERVER.TS STARTING...");
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -7,7 +9,8 @@ import cors from "cors";
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, serverTimestamp, updateDoc, getDocs, query, where, deleteDoc } from "firebase/firestore";
 import { GoogleGenAI } from "@google/genai";
-import firebaseConfig from "./firebase-applet-config.json" assert { type: "json" };
+import fs from "fs";
+const firebaseConfig = JSON.parse(fs.readFileSync(new URL("./firebase-applet-config.json", import.meta.url), "utf-8"));
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const upload = multer({ storage: multer.memoryStorage() });
@@ -17,6 +20,7 @@ const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
 
 async function startServer() {
+  console.log("STARTING SERVER...");
   const app = express();
   const PORT = 3000;
 
@@ -24,7 +28,12 @@ async function startServer() {
   const LOCK_DOC_ID = "global_lock";
   const LOCK_DURATION = 3 * 60 * 60 * 1000; // 3 hours
 
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   app.get("/api/lock-status", async (req, res) => {
+    console.log("FETCHING LOCK STATUS...");
     try {
       const lockDoc = await getDoc(doc(db, "settings", LOCK_DOC_ID));
       let expiry;

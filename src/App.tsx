@@ -31,6 +31,9 @@ export default function App() {
   useEffect(() => {
     const fetchLockStatus = async () => {
       try {
+        const healthRes = await fetch('/api/health');
+        console.log("HEALTH CHECK:", await healthRes.json());
+        
         const response = await fetch('/api/lock-status');
         const data = await response.json();
         setLockData(data);
