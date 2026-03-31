@@ -531,12 +531,6 @@ const NotificationSender = () => {
           >
             Push Notification
           </button>
-          <button 
-            onClick={() => setType('email')}
-            className={`flex-1 p-3 rounded-xl font-medium transition-colors ${type === 'email' ? 'bg-brand-accent text-white' : 'bg-slate-900 text-slate-400 border border-slate-700'}`}
-          >
-            Email Announcement
-          </button>
         </div>
         <input 
           type="text" 

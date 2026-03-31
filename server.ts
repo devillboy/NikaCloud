@@ -1,4 +1,3 @@
-console.log("SERVER.TS STARTING...");
 import express from "express";
 console.log("SERVER.TS STARTING...");
 import { createServer as createViteServer } from "vite";
@@ -10,38 +9,8 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, serverTimestamp, updateDoc, getDocs, query, where, deleteDoc } from "firebase/firestore";
 import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
-import nodemailer from "nodemailer";
 
 const firebaseConfig = JSON.parse(fs.readFileSync(new URL("./firebase-applet-config.json", import.meta.url), "utf-8"));
-
-// Email Transporter (Nodemailer)
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_PORT === "465",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
-async function sendEmail(to: string, subject: string, html: string) {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.warn("Email configuration missing. Skipping email send.");
-    return;
-  }
-  try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"NikaCloud" <${process.env.SMTP_USER}>`,
-      to,
-      subject,
-      html,
-    });
-    console.log(`Email sent successfully to ${to}`);
-  } catch (error) {
-    console.error(`Failed to send email to ${to}:`, error);
-  }
-}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const upload = multer({ storage: multer.memoryStorage() });
@@ -116,7 +85,7 @@ async function startServer() {
   ];
 
   app.use(cors({
-    origin: '*',
+    origin: authorizedOrigins,
     credentials: true
   }));
 
@@ -287,17 +256,7 @@ async function startServer() {
       });
 
       // Notify user about payment submission
-      await sendEmail(
-        userEmail,
-        "Payment Received - NikaCloud",
-        `<h1>Payment Received</h1>
-        <p>Hello,</p>
-        <p>Your payment for <strong>${planName}</strong> (₹${amount}) has been received and is currently being verified.</p>
-        <p><strong>Payment ID:</strong> ${paymentRef.id}</p>
-        <p><strong>Status:</strong> Pending</p>
-        <p>We will notify you once the verification is complete.</p>
-        <p>Best regards,<br>NikaCloud Team</p>`
-      );
+      // Email removed
 
       // 2. AI Verification (only for UPI)
       if (method === 'upi' && screenshot) {
@@ -338,16 +297,7 @@ async function startServer() {
           });
 
           // Notify user about payment rejection
-          await sendEmail(
-            userEmail,
-            "Payment Verification Failed - NikaCloud",
-            `<h1>Payment Rejected</h1>
-            <p>Hello,</p>
-            <p>Unfortunately, our AI system could not verify your payment for <strong>${planName}</strong>.</p>
-            <p><strong>Reason:</strong> AI detected potential fraud or discrepancy.</p>
-            <p>If you believe this is a mistake, please contact our support on Discord with your Payment ID: ${paymentRef.id}</p>
-            <p>Best regards,<br>NikaCloud Team</p>`
-          );
+          // Email removed
 
           return res.json({ status: "rejected", reason: "AI detected potential fraud." });
         }
@@ -360,15 +310,7 @@ async function startServer() {
       });
 
       // Notify user about payment approval
-      await sendEmail(
-        userEmail,
-        "Payment Verified Successfully - NikaCloud",
-        `<h1>Payment Approved</h1>
-        <p>Hello,</p>
-        <p>Great news! Your payment for <strong>${planName}</strong> has been verified successfully.</p>
-        <p>Your server is now being provisioned and will be available in your dashboard shortly.</p>
-        <p>Best regards,<br>NikaCloud Team</p>`
-      );
+      // Email removed
 
       // Simulate Automation: Create server in Firestore
       const serverIp = `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`;
@@ -385,21 +327,7 @@ async function startServer() {
       });
 
       // Notify user about server creation
-      await sendEmail(
-        userEmail,
-        "Your Server is Ready! - NikaCloud",
-        `<h1>Server Provisioned</h1>
-        <p>Hello,</p>
-        <p>Your server <strong>${planName} Node</strong> has been successfully provisioned!</p>
-        <p><strong>Server Details:</strong></p>
-        <ul>
-          <li><strong>IP Address:</strong> ${serverIp}</li>
-          <li><strong>Plan:</strong> ${planName}</li>
-          <li><strong>Expires At:</strong> ${new Date(expiryDate).toLocaleString()}</li>
-        </ul>
-        <p>You can manage your server from your dashboard.</p>
-        <p>Best regards,<br>NikaCloud Team</p>`
-      );
+      // Email removed
 
       res.json({ status: "success", serverId: serverRef.id });
     } catch (error) {
@@ -572,34 +500,14 @@ async function startServer() {
         });
 
         // Notify user about payment approval and server creation
-        await sendEmail(
-          payment.userEmail,
-          "Payment Verified & Server Ready - NikaCloud",
-          `<h1>Payment Approved</h1>
-          <p>Hello,</p>
-          <p>Great news! Your payment for <strong>${payment.planName}</strong> has been verified successfully by our AI system.</p>
-          <p>Your server has been provisioned:</p>
-          <ul>
-            <li><strong>IP Address:</strong> ${serverIp}</li>
-          </ul>
-          <p>Best regards,<br>NikaCloud Team</p>`
-        );
+        // Email removed
 
         res.json({ status: 'Approved', message: 'Payment verified as genuine! Server creation triggered.' });
       } else {
         await updateDoc(doc(db, 'payments', id), { status: 'Rejected', verifiedAt: serverTimestamp() });
 
         // Notify user about payment rejection
-        await sendEmail(
-          payment.userEmail,
-          "Payment Verification Failed - NikaCloud",
-          `<h1>Payment Rejected</h1>
-          <p>Hello,</p>
-          <p>Unfortunately, our AI system could not verify your payment for <strong>${payment.planName}</strong>.</p>
-          <p><strong>Reason:</strong> AI detected potential fraud or discrepancy.</p>
-          <p>If you believe this is a mistake, please contact our support on Discord with your Payment ID: ${id}</p>
-          <p>Best regards,<br>NikaCloud Team</p>`
-        );
+        // Email removed
 
         res.json({ status: 'Rejected', message: 'Payment verified as fake!' });
       }
@@ -636,29 +544,10 @@ async function startServer() {
         });
 
         // Notify user about manual approval and server creation
-        await sendEmail(
-          payment.userEmail,
-          "Payment Approved & Server Ready - NikaCloud",
-          `<h1>Payment Approved</h1>
-          <p>Hello,</p>
-          <p>Your payment for <strong>${payment.planName}</strong> has been <strong>approved</strong> by an administrator.</p>
-          <p>Your server has been provisioned:</p>
-          <ul>
-            <li><strong>IP Address:</strong> ${serverIp}</li>
-          </ul>
-          <p>Best regards,<br>NikaCloud Team</p>`
-        );
+        // Email removed
       } else if (status === 'Rejected') {
         // Notify user about manual rejection
-        await sendEmail(
-          payment.userEmail,
-          "Payment Rejected - NikaCloud",
-          `<h1>Payment Rejected</h1>
-          <p>Hello,</p>
-          <p>Your payment for <strong>${payment.planName}</strong> has been <strong>rejected</strong> by an administrator.</p>
-          <p>If you have any questions, please contact our support on Discord with your Payment ID: ${id}</p>
-          <p>Best regards,<br>NikaCloud Team</p>`
-        );
+        // Email removed
       }
 
       res.json({ success: true, message: `Payment ${status} manually.` });
@@ -696,19 +585,7 @@ async function startServer() {
       await updateDoc(doc(db, 'servers', id), { status: newStatus });
 
       // Fetch user email to notify
-      const userDoc = await getDoc(doc(db, 'users', serverData.userId));
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        await sendEmail(
-          userData.email,
-          `Server Status Change: ${serverData.name}`,
-          `<h1>Server Status Update</h1>
-          <p>Hello,</p>
-          <p>Your server <strong>${serverData.name}</strong> status has been changed to <strong>${newStatus}</strong>.</p>
-          <p>Action triggered: ${signal}</p>
-          <p>Best regards,<br>NikaCloud Team</p>`
-        );
-      }
+      // Email removed
 
       res.json({ success: true, message: `Server ${signal} signal sent. Status: ${newStatus}` });
     } catch (error) {
@@ -721,17 +598,8 @@ async function startServer() {
   app.post('/api/admin/send-email-announcement', async (req, res) => {
     const { title, body } = req.body;
     try {
-      const usersSnapshot = await getDocs(collection(db, 'users'));
-      const emails = usersSnapshot.docs.map(doc => doc.data().email).filter(email => !!email);
-      
-      console.log(`Sending global email announcement to ${emails.length} users...`);
-      
-      // Send emails in parallel (with a bit of caution)
-      await Promise.all(emails.map(email => 
-        sendEmail(email, title, `<h1>Announcement</h1><div>${body}</div><p>Best regards,<br>NikaCloud Team</p>`)
-      ));
-
-      res.json({ success: true, message: `Announcement sent to ${emails.length} users.` });
+      console.log(`Email announcement feature disabled.`);
+      res.json({ success: false, message: 'Email announcement feature disabled.' });
     } catch (error) {
       console.error("Error sending email announcement:", error);
       res.status(500).json({ error: 'Failed to send announcement' });
