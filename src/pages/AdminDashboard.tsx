@@ -489,31 +489,79 @@ const PlanManagement = () => {
 const NotificationSender = () => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [type, setType] = useState<'push' | 'email'>('push');
+  const [sending, setSending] = useState(false);
 
   const handleSend = async () => {
-    // In a real app, this would call your backend to send the notification
-    alert(`Notification sent: ${title} - ${body}`);
+    if (!title || !body) return alert('Please fill in all fields');
+    
+    setSending(true);
+    try {
+      const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
+        ? '' 
+        : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+
+      const endpoint = type === 'email' ? '/api/admin/send-email-announcement' : '/api/admin/send-push-announcement';
+      
+      const response = await fetch(`${apiBase}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, body })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        alert(`Announcement sent successfully!`);
+        setTitle('');
+        setBody('');
+      } else {
+        throw new Error(data.error || 'Failed to send announcement');
+      }
+    } catch (error: any) {
+      console.error("Error sending announcement:", error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
     <div className="p-8 max-w-2xl mx-auto glass-panel rounded-2xl">
-      <h2 className="text-xl font-bold text-white mb-6">Send Push Notification</h2>
+      <h2 className="text-xl font-bold text-white mb-6">Send Global Announcement</h2>
       <div className="space-y-4">
+        <div className="flex gap-4 mb-4">
+          <button 
+            onClick={() => setType('push')}
+            className={`flex-1 p-3 rounded-xl font-medium transition-colors ${type === 'push' ? 'bg-brand-accent text-white' : 'bg-slate-900 text-slate-400 border border-slate-700'}`}
+          >
+            Push Notification
+          </button>
+          <button 
+            onClick={() => setType('email')}
+            className={`flex-1 p-3 rounded-xl font-medium transition-colors ${type === 'email' ? 'bg-brand-accent text-white' : 'bg-slate-900 text-slate-400 border border-slate-700'}`}
+          >
+            Email Announcement
+          </button>
+        </div>
         <input 
           type="text" 
-          placeholder="Title" 
+          placeholder="Announcement Title" 
           value={title} 
           onChange={(e) => setTitle(e.target.value)}
           className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white"
         />
         <textarea 
-          placeholder="Body" 
+          placeholder="Announcement Body (HTML supported for email)" 
           value={body} 
           onChange={(e) => setBody(e.target.value)}
           className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white h-32"
         />
-        <button onClick={handleSend} className="w-full bg-brand-accent hover:bg-brand-accent-bright text-white p-3 rounded-xl font-medium">
-          Send Notification
+        <button 
+          onClick={handleSend} 
+          disabled={sending}
+          className="w-full bg-brand-accent hover:bg-brand-accent-bright text-white p-3 rounded-xl font-medium disabled:opacity-50"
+        >
+          {sending ? 'Sending...' : 'Send Announcement'}
         </button>
       </div>
     </div>

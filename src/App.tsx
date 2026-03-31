@@ -27,29 +27,26 @@ export default function App() {
   
   const [lockData, setLockData] = useState<{ isLocked: boolean; remainingTime: number } | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
     const fetchLockStatus = async () => {
       try {
-        // Use absolute URL if needed, but relative should work if proxied or same origin
-        // For Vercel/External domains, we might need the full URL
         const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
           ? '' 
           : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
 
-        const healthRes = await fetch(`${apiBase}/api/health`);
-        console.log("HEALTH CHECK:", await healthRes.json());
-        
         const response = await fetch(`${apiBase}/api/lock-status`);
+        if (!response.ok) throw new Error('Failed to fetch lock status');
         const data = await response.json();
         setLockData(data);
         setTimeLeft(data.remainingTime);
       } catch (error) {
         console.error("Error fetching lock status:", error);
-        // Fallback: If fetch fails, assume locked with 3 hours for display
-        if (!lockData) {
-          setTimeLeft(3 * 60 * 60 * 1000);
-        }
+        // If fetch fails, we default to unlocked to avoid "fake" locks
+        setLockData({ isLocked: false, remainingTime: 0 });
+      } finally {
+        setIsFetching(false);
       }
     };
 
@@ -80,8 +77,8 @@ export default function App() {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Set this to true to manually lock the site
-  const isLocked = lockData?.isLocked ?? true;
+  // Site is only locked if we've successfully fetched the data AND it's locked
+  const isLocked = lockData?.isLocked ?? false;
 
   return (
     <BrowserRouter>

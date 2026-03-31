@@ -10,7 +10,38 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, serverTimestamp, updateDoc, getDocs, query, where, deleteDoc } from "firebase/firestore";
 import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
+import nodemailer from "nodemailer";
+
 const firebaseConfig = JSON.parse(fs.readFileSync(new URL("./firebase-applet-config.json", import.meta.url), "utf-8"));
+
+// Email Transporter (Nodemailer)
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: parseInt(process.env.SMTP_PORT || "587"),
+  secure: process.env.SMTP_PORT === "465",
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+async function sendEmail(to: string, subject: string, html: string) {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn("Email configuration missing. Skipping email send.");
+    return;
+  }
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"NikaCloud" <${process.env.SMTP_USER}>`,
+      to,
+      subject,
+      html,
+    });
+    console.log(`Email sent successfully to ${to}`);
+  } catch (error) {
+    console.error(`Failed to send email to ${to}:`, error);
+  }
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const upload = multer({ storage: multer.memoryStorage() });
@@ -39,21 +70,35 @@ async function startServer() {
       let expiry;
       const now = Date.now();
       
-      if (!lockDoc.exists() || (lockDoc.data().expiry < now)) {
-        // Reset timer to 3 hours if it doesn't exist or is expired
+      if (!lockDoc.exists()) {
+        // Initialize timer ONLY if it doesn't exist
         expiry = now + LOCK_DURATION;
         await setDoc(doc(db, "settings", LOCK_DOC_ID), { expiry });
-        console.log(`TIMER RESET: New expiry at ${new Date(expiry).toISOString()}`);
+        console.log(`TIMER INITIALIZED: Expiry at ${new Date(expiry).toISOString()}`);
       } else {
         expiry = lockDoc.data().expiry;
       }
 
+      // If it's expired, it stays expired (isLocked = false)
+      // We do NOT auto-reset here anymore to avoid the "fake timer" loop
       const isLocked = now < expiry;
       const remainingTime = Math.max(0, expiry - now);
       res.json({ isLocked, remainingTime, expiry });
     } catch (error) {
       console.error("Error fetching lock status:", error);
       res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
+  // Admin endpoint to manually reset/restart the lock timer
+  app.post("/api/admin/reset-lock", async (req, res) => {
+    try {
+      const now = Date.now();
+      const expiry = now + LOCK_DURATION;
+      await setDoc(doc(db, "settings", LOCK_DOC_ID), { expiry });
+      res.json({ success: true, message: "Lock timer reset to 3 hours", expiry });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to reset lock" });
     }
   });
 
@@ -248,6 +293,19 @@ async function startServer() {
         createdAt: serverTimestamp(),
       });
 
+      // Notify user about payment submission
+      await sendEmail(
+        userEmail,
+        "Payment Received - NikaCloud",
+        `<h1>Payment Received</h1>
+        <p>Hello,</p>
+        <p>Your payment for <strong>${planName}</strong> (₹${amount}) has been received and is currently being verified.</p>
+        <p><strong>Payment ID:</strong> ${paymentRef.id}</p>
+        <p><strong>Status:</strong> Pending</p>
+        <p>We will notify you once the verification is complete.</p>
+        <p>Best regards,<br>NikaCloud Team</p>`
+      );
+
       // 2. AI Verification (only for UPI)
       if (method === 'upi' && screenshot) {
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -285,6 +343,19 @@ async function startServer() {
             reason: "AI detected potential fraud.",
             verifiedAt: serverTimestamp(),
           });
+
+          // Notify user about payment rejection
+          await sendEmail(
+            userEmail,
+            "Payment Verification Failed - NikaCloud",
+            `<h1>Payment Rejected</h1>
+            <p>Hello,</p>
+            <p>Unfortunately, our AI system could not verify your payment for <strong>${planName}</strong>.</p>
+            <p><strong>Reason:</strong> AI detected potential fraud or discrepancy.</p>
+            <p>If you believe this is a mistake, please contact our support on Discord with your Payment ID: ${paymentRef.id}</p>
+            <p>Best regards,<br>NikaCloud Team</p>`
+          );
+
           return res.json({ status: "rejected", reason: "AI detected potential fraud." });
         }
       }
@@ -295,18 +366,47 @@ async function startServer() {
         verifiedAt: serverTimestamp(),
       });
 
+      // Notify user about payment approval
+      await sendEmail(
+        userEmail,
+        "Payment Verified Successfully - NikaCloud",
+        `<h1>Payment Approved</h1>
+        <p>Hello,</p>
+        <p>Great news! Your payment for <strong>${planName}</strong> has been verified successfully.</p>
+        <p>Your server is now being provisioned and will be available in your dashboard shortly.</p>
+        <p>Best regards,<br>NikaCloud Team</p>`
+      );
+
       // Simulate Automation: Create server in Firestore
+      const serverIp = `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`;
       const serverRef = await addDoc(collection(db, "servers"), {
         name: `${planName} Node`,
         type: planId.startsWith('mc') ? 'minecraft' : (planId.startsWith('bot') ? 'bot' : 'vps'),
         status: "Starting",
-        ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
+        ip: serverIp,
         userId,
         planId,
         duration: parseInt(duration),
         expiresAt: expiryDate.toISOString(),
         createdAt: serverTimestamp(),
       });
+
+      // Notify user about server creation
+      await sendEmail(
+        userEmail,
+        "Your Server is Ready! - NikaCloud",
+        `<h1>Server Provisioned</h1>
+        <p>Hello,</p>
+        <p>Your server <strong>${planName} Node</strong> has been successfully provisioned!</p>
+        <p><strong>Server Details:</strong></p>
+        <ul>
+          <li><strong>IP Address:</strong> ${serverIp}</li>
+          <li><strong>Plan:</strong> ${planName}</li>
+          <li><strong>Expires At:</strong> ${new Date(expiryDate).toLocaleString()}</li>
+        </ul>
+        <p>You can manage your server from your dashboard.</p>
+        <p>Best regards,<br>NikaCloud Team</p>`
+      );
 
       res.json({ status: "success", serverId: serverRef.id });
     } catch (error) {
@@ -465,11 +565,12 @@ async function startServer() {
         await updateDoc(doc(db, 'payments', id), { status: 'Approved', verifiedAt: serverTimestamp() });
         
         // Create server
+        const serverIp = `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`;
         await addDoc(collection(db, "servers"), {
           name: `${payment.planName || 'Minecraft'} Server`,
           type: "Minecraft",
           status: "Starting",
-          ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
+          ip: serverIp,
           userId: payment.userId,
           planId: payment.planId,
           panelId: Math.floor(Math.random() * 10000).toString(),
@@ -477,9 +578,36 @@ async function startServer() {
           createdAt: serverTimestamp(),
         });
 
+        // Notify user about payment approval and server creation
+        await sendEmail(
+          payment.userEmail,
+          "Payment Verified & Server Ready - NikaCloud",
+          `<h1>Payment Approved</h1>
+          <p>Hello,</p>
+          <p>Great news! Your payment for <strong>${payment.planName}</strong> has been verified successfully by our AI system.</p>
+          <p>Your server has been provisioned:</p>
+          <ul>
+            <li><strong>IP Address:</strong> ${serverIp}</li>
+          </ul>
+          <p>Best regards,<br>NikaCloud Team</p>`
+        );
+
         res.json({ status: 'Approved', message: 'Payment verified as genuine! Server creation triggered.' });
       } else {
         await updateDoc(doc(db, 'payments', id), { status: 'Rejected', verifiedAt: serverTimestamp() });
+
+        // Notify user about payment rejection
+        await sendEmail(
+          payment.userEmail,
+          "Payment Verification Failed - NikaCloud",
+          `<h1>Payment Rejected</h1>
+          <p>Hello,</p>
+          <p>Unfortunately, our AI system could not verify your payment for <strong>${payment.planName}</strong>.</p>
+          <p><strong>Reason:</strong> AI detected potential fraud or discrepancy.</p>
+          <p>If you believe this is a mistake, please contact our support on Discord with your Payment ID: ${id}</p>
+          <p>Best regards,<br>NikaCloud Team</p>`
+        );
+
         res.json({ status: 'Rejected', message: 'Payment verified as fake!' });
       }
     } catch (error) {
@@ -501,17 +629,43 @@ async function startServer() {
       await updateDoc(doc(db, 'payments', id), { status, verifiedAt: serverTimestamp() });
       
       if (status === 'Approved') {
+        const serverIp = `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`;
         await addDoc(collection(db, "servers"), {
           name: `${payment.planName || 'Minecraft'} Server`,
           type: "Minecraft",
           status: "Starting",
-          ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
+          ip: serverIp,
           userId: payment.userId,
           planId: payment.planId,
           panelId: Math.floor(Math.random() * 10000).toString(),
           specs: payment.specs || { ram: "Unknown", cpu: "Unknown", ssd: "Unknown" },
           createdAt: serverTimestamp(),
         });
+
+        // Notify user about manual approval and server creation
+        await sendEmail(
+          payment.userEmail,
+          "Payment Approved & Server Ready - NikaCloud",
+          `<h1>Payment Approved</h1>
+          <p>Hello,</p>
+          <p>Your payment for <strong>${payment.planName}</strong> has been <strong>approved</strong> by an administrator.</p>
+          <p>Your server has been provisioned:</p>
+          <ul>
+            <li><strong>IP Address:</strong> ${serverIp}</li>
+          </ul>
+          <p>Best regards,<br>NikaCloud Team</p>`
+        );
+      } else if (status === 'Rejected') {
+        // Notify user about manual rejection
+        await sendEmail(
+          payment.userEmail,
+          "Payment Rejected - NikaCloud",
+          `<h1>Payment Rejected</h1>
+          <p>Hello,</p>
+          <p>Your payment for <strong>${payment.planName}</strong> has been <strong>rejected</strong> by an administrator.</p>
+          <p>If you have any questions, please contact our support on Discord with your Payment ID: ${id}</p>
+          <p>Best regards,<br>NikaCloud Team</p>`
+        );
       }
 
       res.json({ success: true, message: `Payment ${status} manually.` });
@@ -531,6 +685,75 @@ async function startServer() {
       res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch user servers' });
+    }
+  });
+
+  // Server Power Actions
+  app.post('/api/servers/:id/power', async (req, res) => {
+    const { id } = req.params;
+    const { signal } = req.body; // start, stop, restart
+    try {
+      const serverDoc = await getDoc(doc(db, 'servers', id));
+      if (!serverDoc.exists()) {
+        return res.status(404).json({ error: 'Server not found' });
+      }
+      const serverData = serverDoc.data();
+      const newStatus = signal === 'start' ? 'Online' : (signal === 'stop' ? 'Offline' : 'Restarting');
+      
+      await updateDoc(doc(db, 'servers', id), { status: newStatus });
+
+      // Fetch user email to notify
+      const userDoc = await getDoc(doc(db, 'users', serverData.userId));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        await sendEmail(
+          userData.email,
+          `Server Status Change: ${serverData.name}`,
+          `<h1>Server Status Update</h1>
+          <p>Hello,</p>
+          <p>Your server <strong>${serverData.name}</strong> status has been changed to <strong>${newStatus}</strong>.</p>
+          <p>Action triggered: ${signal}</p>
+          <p>Best regards,<br>NikaCloud Team</p>`
+        );
+      }
+
+      res.json({ success: true, message: `Server ${signal} signal sent. Status: ${newStatus}` });
+    } catch (error) {
+      console.error("Error in /api/servers/:id/power:", error);
+      res.status(500).json({ error: 'Failed to perform power action' });
+    }
+  });
+
+  // Admin: Send Email Announcement to all users
+  app.post('/api/admin/send-email-announcement', async (req, res) => {
+    const { title, body } = req.body;
+    try {
+      const usersSnapshot = await getDocs(collection(db, 'users'));
+      const emails = usersSnapshot.docs.map(doc => doc.data().email).filter(email => !!email);
+      
+      console.log(`Sending global email announcement to ${emails.length} users...`);
+      
+      // Send emails in parallel (with a bit of caution)
+      await Promise.all(emails.map(email => 
+        sendEmail(email, title, `<h1>Announcement</h1><div>${body}</div><p>Best regards,<br>NikaCloud Team</p>`)
+      ));
+
+      res.json({ success: true, message: `Announcement sent to ${emails.length} users.` });
+    } catch (error) {
+      console.error("Error sending email announcement:", error);
+      res.status(500).json({ error: 'Failed to send announcement' });
+    }
+  });
+
+  // Admin: Send Push Announcement (Mock for now)
+  app.post('/api/admin/send-push-announcement', async (req, res) => {
+    const { title, body } = req.body;
+    try {
+      // In a real app, you'd integrate with Firebase Cloud Messaging (FCM)
+      console.log(`Push Announcement: ${title} - ${body}`);
+      res.json({ success: true, message: 'Push announcement simulated.' });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to send push announcement' });
     }
   });
 
