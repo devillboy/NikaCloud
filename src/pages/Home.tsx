@@ -36,6 +36,12 @@ export default function Home() {
         setVpsPlans(vpsData);
       } catch (error) {
         console.error("Error fetching infrastructure data:", error);
+        // Fallback to empty arrays to prevent UI crash
+        setFeatures([]);
+        setBotPlans([]);
+        setMinecraftPlans([]);
+        setVpsPlans([]);
+        // Optionally, you could set an error state here to show a UI message
       } finally {
         setLoading(false);
       }
