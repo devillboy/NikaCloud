@@ -14,6 +14,11 @@ interface ServerData {
   ip?: string;
   planId: string;
   panelId?: string;
+  specs?: {
+    ram: string;
+    cpu: string;
+    ssd: string;
+  };
 }
 
 export default function UserDashboard() {
@@ -50,9 +55,12 @@ export default function UserDashboard() {
             if (res.ok) {
               const data = await res.json();
               setRealServerData(prev => ({ ...prev, [server.panelId!]: data }));
+            } else {
+              const errorText = await res.text();
+              console.error(`Failed to fetch real server data for ${server.panelId}: ${res.status} ${res.statusText}`, errorText);
             }
           } catch (err) {
-            console.error("Failed to fetch real server data", err);
+            console.error(`Failed to fetch real server data for ${server.panelId}:`, err);
           }
         }
       });

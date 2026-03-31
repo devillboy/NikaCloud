@@ -90,6 +90,11 @@ export default function ClaimFreeServer() {
         userId: user.uid,
         planId: 'free-tier',
         panelId: data.serverDetails.id,
+        specs: {
+          ram: '5GB',
+          cpu: '100%',
+          ssd: '10GB'
+        },
         createdAt: serverTimestamp()
       });
 

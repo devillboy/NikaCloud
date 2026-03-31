@@ -30,16 +30,22 @@ export const AdminPayments = () => {
   }, []);
 
   const createServerForPayment = async (payment: any) => {
-    await addDoc(collection(db, "servers"), {
-      name: `${payment.planName || 'Minecraft'} Server`,
-      type: "Minecraft",
-      status: "Starting",
-      ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
-      userId: payment.userId,
-      planId: payment.planId,
-      specs: payment.specs || { ram: "Unknown", cpu: "Unknown", ssd: "Unknown" },
-      createdAt: serverTimestamp(),
-    });
+    try {
+      await addDoc(collection(db, "servers"), {
+        name: `${payment.planName || 'Minecraft'} Server`,
+        type: "Minecraft",
+        status: "Starting",
+        ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
+        userId: payment.userId,
+        planId: payment.planId,
+        panelId: Math.floor(Math.random() * 10000).toString(),
+        specs: payment.specs || { ram: "Unknown", cpu: "Unknown", ssd: "Unknown" },
+        createdAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("Error creating server for payment:", err);
+      alert("Failed to create server automatically. Please check Firestore rules or logs.");
+    }
   };
 
   const verifyPayment = async (payment: any) => {

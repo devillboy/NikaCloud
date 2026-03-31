@@ -43,16 +43,20 @@ export default function Billing() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("/api/plans")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch("/api/plans");
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
         setPlans(data);
-        setLoading(false);
-      })
-      .catch(err => {
+      } catch (err) {
         console.error("Error fetching plans:", err);
+        setError("Failed to load plans. Please refresh the page.");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    fetchPlans();
   }, []);
 
   const handlePaymentSubmitted = async (screenshotBase64: string, upiId: string, utrId: string) => {
@@ -137,6 +141,7 @@ export default function Billing() {
             ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
             userId: auth.currentUser.uid,
             planId: selectedPlan.id,
+            panelId: Math.floor(Math.random() * 10000).toString(),
             specs: {
               ram: selectedPlan.ram,
               cpu: selectedPlan.cpu,

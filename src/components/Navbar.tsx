@@ -26,9 +26,9 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Features</a>
-            <a href="#minecraft" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Minecraft</a>
-            <a href="#vps" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">VPS</a>
+            <Link to="/#features" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Features</Link>
+            <Link to="/#minecraft" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Minecraft</Link>
+            <Link to="/#vps" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">VPS</Link>
             <Link to="/billing" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Billing</Link>
             <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Discord</a>
             
@@ -99,9 +99,9 @@ export default function Navbar() {
           className="md:hidden glass-panel border-t border-white/10"
         >
           <div className="px-4 pt-2 pb-6 space-y-4 flex flex-col">
-            <a href="#features" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">Features</a>
-            <a href="#minecraft" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">Minecraft</a>
-            <a href="#vps" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">VPS</a>
+            <Link to="/#features" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">Features</Link>
+            <Link to="/#minecraft" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">Minecraft</Link>
+            <Link to="/#vps" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">VPS</Link>
             <Link to="/billing" onClick={() => setIsOpen(false)} className="text-base font-medium text-gray-300 hover:text-white">Billing</Link>
             <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className="text-base font-medium text-gray-300 hover:text-white">Discord</a>
             
