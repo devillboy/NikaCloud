@@ -13,6 +13,9 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Billing from './pages/Billing';
 import PaymentResult from './pages/PaymentResult';
+import About from './pages/About';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 import { useFCM } from './hooks/useFCM';
 
 export default function App() {
@@ -30,6 +33,9 @@ export default function App() {
             <Route path="/claim-free-server" element={<ClaimFreeServer />} />
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/admin/*" element={<AdminDashboard />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
           </Routes>
         </main>
         <Footer />

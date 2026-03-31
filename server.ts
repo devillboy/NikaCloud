@@ -20,6 +20,7 @@ async function startServer() {
 
   // Placeholder for plans
   app.get("/api/plans", (req, res) => {
+    console.log("Fetching plans...");
     res.json([
       { id: "mc-budget-1", name: "Budget Minecraft - 2GB", price: "₹99", ram: "2 GB", ssd: "10 GB", cpu: "100%" },
       { id: "mc-budget-2", name: "Budget Minecraft - 4GB", price: "₹199", ram: "4 GB", ssd: "20 GB", cpu: "200%" },

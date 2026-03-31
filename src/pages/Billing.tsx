@@ -174,6 +174,14 @@ export default function Billing() {
     }
   };
 
+  const handlePlanSelect = (plan: any) => {
+    if (plan.id.startsWith('vps-')) {
+      window.open("https://discord.gg/nikacloud", "_blank");
+      return;
+    }
+    setSelectedPlan(plan);
+  };
+
   if (serverCreating) return <ServerAnimation />;
 
   return (
@@ -209,10 +217,18 @@ export default function Billing() {
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto mb-8 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-3"
+          className="max-w-2xl mx-auto mb-8 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 flex flex-col items-center gap-3"
         >
-          <AlertCircle className="w-5 h-5 shrink-0" />
-          <p className="text-sm font-medium">{error}</p>
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <p className="text-sm font-medium">{error}</p>
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="text-xs font-bold underline hover:text-white transition-colors"
+          >
+            Retry Loading Plans
+          </button>
         </motion.div>
       )}
 
@@ -251,7 +267,7 @@ export default function Billing() {
               ))
             ) : (
               plans.map((plan: any) => (
-                <PlanCard key={plan.id} plan={plan} onSelect={setSelectedPlan} />
+                <PlanCard key={plan.id} plan={plan} onSelect={handlePlanSelect} />
               ))
             )}
           </motion.div>
