@@ -91,6 +91,14 @@
           "type": "string",
           "description": "ID of the plan this server uses"
         },
+        "specs": {
+          "type": "object",
+          "properties": {
+            "ram": { "type": "string" },
+            "cpu": { "type": "string" },
+            "ssd": { "type": "string" }
+          }
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",
@@ -98,6 +106,60 @@
         }
       },
       "required": ["name", "type", "status", "userId", "planId", "createdAt"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "A payment submission for a plan",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "ID of the user who made the payment"
+        },
+        "planId": {
+          "type": "string",
+          "description": "ID of the plan purchased"
+        },
+        "planName": {
+          "type": "string",
+          "description": "Name of the plan purchased"
+        },
+        "amount": {
+          "type": "string",
+          "description": "Amount paid"
+        },
+        "upiId": {
+          "type": "string",
+          "description": "The user's UPI ID used for payment"
+        },
+        "utrId": {
+          "type": "string",
+          "description": "The transaction UTR ID"
+        },
+        "specs": {
+          "type": "object",
+          "properties": {
+            "ram": { "type": "string" },
+            "cpu": { "type": "string" },
+            "ssd": { "type": "string" }
+          }
+        },
+        "screenshotUrl": {
+          "type": "string",
+          "description": "URL of the payment screenshot"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Pending", "Approved", "Rejected"],
+          "description": "Status of the payment"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["userId", "planId", "amount", "screenshotUrl", "status", "createdAt"]
     }
   },
   "firestore": {
@@ -112,6 +174,10 @@
     "/servers/{serverId}": {
       "schema": { "$ref": "#/entities/Server" },
       "description": "Collection of deployed servers"
+    },
+    "/payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/Payment" },
+      "description": "Collection of payments"
     }
   }
 }

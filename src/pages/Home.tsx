@@ -254,10 +254,10 @@ export default function Home() {
                     )}
                   </ul>
                   
-                  <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all text-center ${plan.popular ? 'bg-fiery-gradient hover:opacity-90 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
+                  <Link to="/billing" className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all text-center ${plan.popular ? 'bg-fiery-gradient hover:opacity-90 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
                     Order Now
-                  </a>
-                  <p className="text-xs text-slate-500 mt-3 text-center">Click to open a ticket on Discord to purchase.</p>
+                  </Link>
+                  <p className="text-xs text-slate-500 mt-3 text-center">Instant automated setup after payment.</p>
                 </div>
               ))}
             </div>
@@ -310,10 +310,10 @@ export default function Home() {
                     </li>
                   </ul>
                   
-                  <a href="https://discord.gg/nikacloud" target="_blank" rel="noopener noreferrer" className={`w-full py-3 rounded-xl font-semibold transition-all text-center ${plan.popular ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
+                  <Link to="/billing" className={`w-full py-3 rounded-xl font-semibold transition-all text-center ${plan.popular ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'}`}>
                     Order Now
-                  </a>
-                  <p className="text-xs text-slate-500 mt-3 text-center">Click to open a ticket on Discord to purchase.</p>
+                  </Link>
+                  <p className="text-xs text-slate-500 mt-3 text-center">Instant automated setup after payment.</p>
                 </div>
               ))}
             </div>

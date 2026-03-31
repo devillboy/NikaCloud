@@ -121,9 +121,9 @@ export default function UserDashboard() {
               const realData = server.panelId ? realServerData[server.panelId] : null;
               const displayStatus = realData?.status || server.status;
               const displayIp = realData?.ip || server.ip || 'Pending Allocation...';
-              const displayRam = realData?.ram || '5GB';
-              const displayCpu = realData?.cpu || '100%';
-              const displayDisk = realData?.disk || '10GB';
+              const displayRam = realData?.ram || server.specs?.ram || '5GB';
+              const displayCpu = realData?.cpu || server.specs?.cpu || '100%';
+              const displayDisk = realData?.disk || server.specs?.ssd || '10GB';
 
               return (
               <motion.div

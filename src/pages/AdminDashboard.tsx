@@ -1,4 +1,8 @@
+import { AdminPayments } from './AdminPayments';
 import { motion } from 'motion/react';
+import { useState, useEffect } from 'react';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { db } from '../firebase';
 import { 
   LayoutDashboard, 
   Server, 
@@ -34,6 +38,7 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (open: boo
     { icon: Server, label: 'Servers', path: '/admin/servers' },
     { icon: CreditCard, label: 'Plans', path: '/admin/plans' },
     { icon: Users, label: 'Users', path: '/admin/users' },
+    { icon: CreditCard, label: 'Payments', path: '/admin/payments' },
     { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
@@ -137,10 +142,6 @@ const Topbar = ({ toggleSidebar }: { toggleSidebar: () => void }) => {
     </header>
   );
 };
-
-import { useState, useEffect } from 'react';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../firebase';
 
 const Analytics = () => {
   const [servers, setServers] = useState<any[]>([]);
@@ -543,6 +544,7 @@ export default function AdminDashboard() {
             <Route path="/servers" element={<ServerManagement />} />
             <Route path="/plans" element={<PlanManagement />} />
             <Route path="/users" element={<UserManagement />} />
+            <Route path="/payments" element={<AdminPayments />} />
             <Route path="/notifications" element={<NotificationSender />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>

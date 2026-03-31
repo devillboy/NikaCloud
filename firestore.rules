@@ -33,7 +33,22 @@ service cloud.firestore {
     //   - ip: string (optional) - IP address
     //   - userId: string (required) - ID of the user who owns the server
     //   - planId: string (required) - ID of the plan this server uses
+    //   - specs: map (required) - RAM, CPU, SSD specs
     //   - createdAt: timestamp (required) - Creation timestamp
+    //
+    // Collection: payments
+    // Document ID: {paymentId}
+    // Fields:
+    //   - userId: string (required) - ID of the user
+    //   - userEmail: string (required) - Email of the user
+    //   - planId: string (required) - ID of the plan
+    //   - planName: string (required) - Name of the plan
+    //   - amount: string (required) - Amount paid
+    //   - specs: map (required) - Plan specs
+    //   - screenshotUrl: string (required) - Base64 screenshot
+    //   - status: string (required) - Pending, Approved, Rejected
+    //   - createdAt: timestamp (required) - Creation timestamp
+    //   - verifiedAt: timestamp (optional) - Verification timestamp
     //
     // ===============================================================
 
@@ -53,9 +68,13 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == resource.data.userId;
     }
 
+    function isPaymentOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
     function isAdmin() {
       return isAuthenticated() &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
           (request.auth.token.email == "ghoshsima874@gmail.com" && request.auth.token.email_verified == true));
     }
 
@@ -83,8 +102,7 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['email', 'name', 'displayName', 'photoURL', 'role', 'hasClaimedFreeServer', 'createdAt']) &&
-             data.email is string && isValidEmail(data.email) &&
+      return data.email is string && isValidEmail(data.email) &&
              isValidOptionalString('name', 0, 100) &&
              isValidOptionalString('displayName', 0, 100) &&
              isValidOptionalString('photoURL', 0, 1000) &&
@@ -94,8 +112,7 @@ service cloud.firestore {
     }
 
     function isValidPlan(data) {
-      return hasOnlyAllowedFields(['name', 'type', 'price', 'ram', 'status', 'createdAt']) &&
-             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
              data.type is string && data.type.size() > 0 && data.type.size() < 50 &&
              data.price is number && data.price >= 0 &&
              data.ram is string && data.ram.size() > 0 && data.ram.size() < 20 &&
@@ -104,15 +121,30 @@ service cloud.firestore {
     }
 
     function isValidServer(data) {
-      return hasOnlyAllowedFields(['name', 'type', 'status', 'ip', 'userId', 'planId', 'panelId', 'createdAt']) &&
-             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
              data.type is string && data.type.size() > 0 && data.type.size() < 50 &&
              data.status in ['Online', 'Offline', 'Starting', 'Stopping'] &&
              isValidOptionalString('ip', 7, 45) &&
              data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
              data.planId is string && data.planId.size() > 0 && data.planId.size() < 100 &&
              isValidOptionalString('panelId', 1, 100) &&
+             data.specs is map &&
              data.createdAt is timestamp;
+    }
+
+    function isValidPayment(data) {
+      return data.userId is string && data.userId.size() > 0 &&
+             data.userEmail is string && isValidEmail(data.userEmail) &&
+             data.planId is string &&
+             data.planName is string &&
+             data.amount is string &&
+             data.upiId is string &&
+             data.utrId is string &&
+             data.specs is map &&
+             data.screenshotUrl is string &&
+             data.status in ['Pending', 'Approved', 'Rejected'] &&
+             (data.createdAt is timestamp || data.createdAt == null) &&
+             (!( 'verifiedAt' in data ) || data.verifiedAt is timestamp || data.verifiedAt == null);
     }
 
     // ===============================================================
@@ -139,14 +171,21 @@ service cloud.firestore {
     }
 
     match /servers/{serverId} {
-      allow read: if isDocOwner() || isAdmin();
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() && 
-                    isValidServer(request.resource.data) && 
-                    (request.resource.data.userId == request.auth.uid || isAdmin());
+                    isValidServer(request.resource.data);
       allow update: if isAuthenticated() && 
-                    isValidServer(request.resource.data) && 
-                    ((isDocOwner() && request.resource.data.userId == resource.data.userId && request.resource.data.createdAt == resource.data.createdAt) || isAdmin());
-      allow delete: if isDocOwner() || isAdmin();
+                    isValidServer(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+                    isValidPayment(request.resource.data);
+      allow update: if isAuthenticated() && 
+                    isValidPayment(request.resource.data);
+      allow delete: if isAdmin();
     }
   }
 }

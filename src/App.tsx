@@ -11,6 +11,8 @@ import Login from './pages/Login';
 import ClaimFreeServer from './pages/ClaimFreeServer';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import Billing from './pages/Billing';
+import PaymentResult from './pages/PaymentResult';
 import { useFCM } from './hooks/useFCM';
 
 export default function App() {
@@ -22,6 +24,8 @@ export default function App() {
         <main className="flex-grow flex flex-col">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/billing" element={<Billing />} />
+            <Route path="/payment-result" element={<PaymentResult />} />
             <Route path="/login" element={<Login />} />
             <Route path="/claim-free-server" element={<ClaimFreeServer />} />
             <Route path="/dashboard" element={<UserDashboard />} />
