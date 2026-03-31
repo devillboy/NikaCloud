@@ -8,6 +8,6 @@ export const getApiBase = () => {
     return `http://${hostname}:3000`;
   }
   
-  // Always use the production backend URL for any non-localhost environment
-  return 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+  // Use relative URL for Vercel deployment to allow proxying
+  return '';
 };

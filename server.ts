@@ -116,23 +116,7 @@ async function startServer() {
   ];
 
   app.use(cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      
-      const isAuthorized = authorizedOrigins.some(authOrigin => {
-        if (authOrigin instanceof RegExp) {
-          return authOrigin.test(origin);
-        }
-        return authOrigin === origin;
-      });
-
-      if (isAuthorized) {
-        callback(null, true);
-      } else {
-        console.error(`BLOCKED UNAUTHORIZED ORIGIN: ${origin}`);
-        callback(new Error('Not allowed by CORS - Unauthorized Domain'));
-      }
-    },
+    origin: '*',
     credentials: true
   }));
 
