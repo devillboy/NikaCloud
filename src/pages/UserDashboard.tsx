@@ -14,6 +14,9 @@ interface ServerData {
   ip?: string;
   planId: string;
   panelId?: string;
+  expiresAt?: string;
+  renewalWindowEndsAt?: string;
+  duration?: number;
   specs?: {
     ram: string;
     cpu: string;
@@ -27,6 +30,21 @@ export default function UserDashboard() {
   const [servers, setServers] = useState<ServerData[]>([]);
   const [fetching, setFetching] = useState(true);
   const [realServerData, setRealServerData] = useState<Record<string, any>>({});
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  const getDaysRemaining = (dateString?: string) => {
+    if (!dateString) return 0;
+    const diff = new Date(dateString).getTime() - new Date().getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -132,6 +150,9 @@ export default function UserDashboard() {
               const displayRam = realData?.ram || server.specs?.ram || '5GB';
               const displayCpu = realData?.cpu || server.specs?.cpu || '100%';
               const displayDisk = realData?.disk || server.specs?.ssd || '10GB';
+              const daysLeft = getDaysRemaining(server.expiresAt);
+              const isExpiringSoon = daysLeft <= 7 && daysLeft > 0;
+              const isExpired = daysLeft <= 0;
 
               return (
               <motion.div
@@ -139,7 +160,7 @@ export default function UserDashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="glass-panel rounded-2xl overflow-hidden border border-white/5 flex flex-col"
+                className={`glass-panel rounded-2xl overflow-hidden border flex flex-col ${isExpired ? 'border-red-500/30' : isExpiringSoon ? 'border-yellow-500/30' : 'border-white/5'}`}
               >
                 {/* Server Header */}
                 <div className="p-6 border-b border-white/5 bg-slate-900/50">
@@ -154,12 +175,13 @@ export default function UserDashboard() {
                       </div>
                     </div>
                     <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5
-                      ${displayStatus === 'Online' ? 'bg-brand-accent/10 text-brand-accent border border-brand-accent/20' : 
+                      ${isExpired ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                        displayStatus === 'Online' ? 'bg-brand-accent/10 text-brand-accent border border-brand-accent/20' : 
                         displayStatus === 'Starting' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 
                         'bg-red-500/10 text-red-400 border border-red-500/20'}`}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full ${displayStatus === 'Online' ? 'bg-brand-accent' : displayStatus === 'Starting' ? 'bg-yellow-400' : 'bg-red-400'}`}></span>
-                      {displayStatus}
+                      <span className={`w-1.5 h-1.5 rounded-full ${isExpired ? 'bg-red-400' : displayStatus === 'Online' ? 'bg-brand-accent' : displayStatus === 'Starting' ? 'bg-yellow-400' : 'bg-red-400'}`}></span>
+                      {isExpired ? 'Expired' : displayStatus}
                     </div>
                   </div>
                   
@@ -167,6 +189,24 @@ export default function UserDashboard() {
                     <Activity className="w-4 h-4 text-brand-accent" />
                     <span className="font-mono">{displayIp}</span>
                   </div>
+                </div>
+
+                {/* Expiry Info */}
+                <div className="px-6 py-3 bg-slate-950/30 border-b border-white/5 flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <RotateCcw className="w-3 h-3 text-slate-500" />
+                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Expires: {formatDate(server.expiresAt)}</span>
+                  </div>
+                  {daysLeft > 0 && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter ${isExpiringSoon ? 'bg-yellow-500/20 text-yellow-500' : 'bg-slate-800 text-slate-400'}`}>
+                      {daysLeft} Days Left
+                    </span>
+                  )}
+                  {isExpired && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter bg-red-500/20 text-red-500">
+                      Renewal Window Active
+                    </span>
+                  )}
                 </div>
 
                 {/* Server Specs */}
@@ -202,8 +242,16 @@ export default function UserDashboard() {
                     rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent rounded-xl font-medium transition-colors border border-brand-accent/20"
                   >
-                    <ExternalLink className="w-4 h-4" /> Manage Server
+                    <ExternalLink className="w-4 h-4" /> Manage
                   </a>
+                  {(isExpired || isExpiringSoon) && (
+                    <button 
+                      onClick={() => navigate('/billing')}
+                      className="flex-1 py-2.5 bg-brand-accent hover:bg-brand-accent-bright text-white rounded-xl font-medium transition-colors"
+                    >
+                      Renew Now
+                    </button>
+                  )}
                 </div>
               </motion.div>
             )})}

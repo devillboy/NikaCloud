@@ -9,14 +9,16 @@ interface Plan {
   ram: string;
   ssd: string;
   cpu: string;
+  originalPrice?: number;
 }
 
 interface PlanCardProps {
   plan: Plan;
   onSelect: (plan: Plan) => void;
+  duration?: number;
 }
 
-export const PlanCard: React.FC<PlanCardProps> = ({ plan, onSelect }) => {
+export const PlanCard: React.FC<PlanCardProps> = ({ plan, onSelect, duration = 1 }) => {
   return (
     <motion.div 
       whileHover={{ y: -2 }}
@@ -32,7 +34,14 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, onSelect }) => {
         </div>
         <div className="text-right">
           <div className="text-2xl font-mono font-bold text-white">{plan.price}</div>
-          <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Per Cycle</div>
+          <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+            {duration === 1 ? 'Per Month' : `For ${duration / 12} Year${duration > 12 ? 's' : ''}`}
+          </div>
+          {duration >= 12 && plan.originalPrice && (
+            <div className="text-[9px] font-mono text-brand-accent line-through opacity-50">
+              ₹{plan.originalPrice * duration}
+            </div>
+          )}
         </div>
       </div>
       
@@ -65,7 +74,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, onSelect }) => {
           </li>
           <li className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
             <div className="w-1 h-1 bg-brand-accent rounded-full" />
-            INSTANT PROVISIONING
+            7-DAY RENEWAL WINDOW
           </li>
         </ul>
       </div>
@@ -74,7 +83,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, onSelect }) => {
         onClick={() => onSelect(plan)}
         className="w-full py-3 bg-brand-accent text-brand-darker text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors"
       >
-        Initialize Node
+        Buy Now
       </button>
     </motion.div>
   );

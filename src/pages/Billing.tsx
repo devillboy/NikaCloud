@@ -35,6 +35,7 @@ const handleFirestoreError = (error: any, operationType: OperationType, path: st
 export default function Billing() {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [duration, setDuration] = useState(1); // in months
   const [serverCreating, setServerCreating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
@@ -57,7 +58,7 @@ export default function Billing() {
         setPlans(data);
       } catch (err: any) {
         console.error("Error fetching plans:", err);
-        setError(`Failed to synchronize with Node Cluster: ${err.message || "Unknown protocol error"}. Please re-initialize the connection.`);
+        setError(`Failed to load plans. Please try again.`);
       } finally {
         setLoading(false);
       }
@@ -75,6 +76,18 @@ export default function Billing() {
     setError(null);
 
     try {
+      // Calculate expiry date
+      const expiryDate = new Date();
+      expiryDate.setMonth(expiryDate.getMonth() + duration);
+
+      // Calculate final price
+      const basePrice = typeof selectedPlan.price === 'string' 
+        ? parseInt(selectedPlan.price.replace(/[^0-9]/g, '')) 
+        : selectedPlan.price;
+      const totalPrice = duration >= 12 
+        ? Math.floor(basePrice * duration * 0.8) 
+        : basePrice * duration;
+
       // 1. Save initial payment record to Firestore
       let paymentRef;
       try {
@@ -83,7 +96,9 @@ export default function Billing() {
           userEmail: auth.currentUser.email,
           planId: selectedPlan.id,
           planName: selectedPlan.name,
-          amount: selectedPlan.price,
+          amount: totalPrice,
+          duration,
+          expiryDate: expiryDate.toISOString(),
           upiId,
           utrId,
           specs: {
@@ -140,6 +155,9 @@ export default function Billing() {
 
         // 4. Create the real server record
         try {
+          const expiryDate = new Date();
+          expiryDate.setMonth(expiryDate.getMonth() + duration);
+
           await addDoc(collection(db, "servers"), {
             name: `${selectedPlan.name} Node`,
             type: selectedPlan.type === 'minecraft' ? "Minecraft" : "VPS",
@@ -153,6 +171,9 @@ export default function Billing() {
               cpu: selectedPlan.cpu,
               ssd: selectedPlan.ssd || selectedPlan.storage
             },
+            duration,
+            expiresAt: expiryDate.toISOString(),
+            renewalWindowEndsAt: new Date(expiryDate.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days window
             createdAt: serverTimestamp(),
           });
         } catch (err) {
@@ -199,7 +220,7 @@ export default function Billing() {
           className="inline-flex items-center gap-2 px-3 py-1 border border-brand-border bg-brand-card mb-4"
         >
           <div className="w-2 h-2 bg-brand-accent animate-pulse" />
-          <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-accent">Billing System v4.2</span>
+          <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-brand-accent">Billing System</span>
         </motion.div>
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
@@ -207,7 +228,7 @@ export default function Billing() {
           transition={{ delay: 0.1 }}
           className="text-4xl md:text-6xl font-bold text-white mb-4 tracking-tighter"
         >
-          NETWORK <span className="text-brand-accent">NODES</span>
+          BUY YOUR <span className="text-brand-accent">SERVER</span>
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
@@ -215,9 +236,34 @@ export default function Billing() {
           transition={{ delay: 0.2 }}
           className="text-slate-500 max-w-2xl mx-auto font-mono text-xs uppercase tracking-widest"
         >
-          Select your infrastructure parameters. All nodes feature enterprise-grade DDoS mitigation and NVMe arrays.
+          Select your plan. Get 20% OFF on Yearly plans!
         </motion.p>
       </div>
+
+      {!selectedPlan && (
+        <div className="max-w-4xl mx-auto mb-12 flex flex-col md:flex-row items-center justify-center gap-6">
+          <div className="text-sm font-mono text-slate-400 uppercase tracking-widest">Select Duration:</div>
+          <div className="flex bg-brand-card border border-brand-border p-1 rounded-xl">
+            {[
+              { label: '1 Month', value: 1 },
+              { label: '1 Year (20% OFF)', value: 12 },
+              { label: '2 Years (20% OFF)', value: 24 }
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setDuration(opt.value)}
+                className={`px-6 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
+                  duration === opt.value 
+                    ? 'bg-brand-accent text-brand-darker' 
+                    : 'text-slate-500 hover:text-white'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {error && (
         <motion.div 
@@ -233,7 +279,7 @@ export default function Billing() {
             onClick={() => window.location.reload()}
             className="px-6 py-2 border border-red-500/50 text-red-400 text-[10px] font-mono uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"
           >
-            Re-initialize Connection
+            Try Again
           </button>
         </motion.div>
       )}
@@ -250,11 +296,11 @@ export default function Billing() {
               <div className="absolute inset-0 border border-brand-accent animate-ping opacity-20" />
               <ShieldCheck className="w-10 h-10 text-brand-accent" />
             </div>
-            <h3 className="text-sm font-mono text-brand-accent uppercase tracking-[0.3em] mb-4">Security Analysis</h3>
-            <p className="text-slate-500 text-xs font-mono mb-8 leading-relaxed">AI-DRIVEN FRAUD DETECTION PROTOCOL IN PROGRESS. ANALYZING TRANSACTION METADATA AND VISUAL PROOF-OF-PAYMENT.</p>
+            <h3 className="text-sm font-mono text-brand-accent uppercase tracking-[0.3em] mb-4">Checking Payment</h3>
+            <p className="text-slate-500 text-xs font-mono mb-8 leading-relaxed">AI IS CHECKING YOUR PAYMENT. PLEASE WAIT WHILE WE VERIFY YOUR TRANSACTION.</p>
             <div className="flex items-center justify-center gap-3 text-white font-mono text-[10px] uppercase tracking-widest">
               <Loader2 className="w-4 h-4 animate-spin text-brand-accent" />
-              Verifying Hash...
+              Verifying...
             </div>
           </motion.div>
         </div>
@@ -274,9 +320,23 @@ export default function Billing() {
                 <div key={i} className="h-96 bg-brand-card animate-pulse" />
               ))
             ) : (
-              plans.map((plan: any) => (
-                <PlanCard key={plan.id} plan={plan} onSelect={handlePlanSelect} />
-              ))
+              plans.map((plan: any) => {
+                const basePrice = typeof plan.price === 'string' 
+                  ? parseInt(plan.price.replace(/[^0-9]/g, '')) 
+                  : plan.price;
+                const displayPrice = duration >= 12 
+                  ? Math.floor(basePrice * duration * 0.8) 
+                  : basePrice * duration;
+                
+                return (
+                  <PlanCard 
+                    key={plan.id} 
+                    plan={{...plan, price: `₹${displayPrice}`, originalPrice: basePrice}} 
+                    onSelect={handlePlanSelect} 
+                    duration={duration}
+                  />
+                );
+              })
             )}
           </motion.div>
         ) : (

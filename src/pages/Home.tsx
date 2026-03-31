@@ -38,10 +38,10 @@ export default function Home() {
             <div className="flex flex-wrap items-center gap-4">
               <Link to="/claim-free-server" className="px-8 py-4 bg-brand-accent text-brand-darker font-bold text-xs uppercase tracking-[0.2em] hover:bg-white transition-colors flex items-center gap-3">
                 <Terminal className="w-4 h-4" />
-                Initialize Free Node
+                Get Free Server
               </Link>
               <a href="#plans" className="px-8 py-4 border border-brand-border text-white font-bold text-xs uppercase tracking-[0.2em] hover:bg-brand-border transition-colors">
-                View Parameters
+                View Plans
               </a>
             </div>
           </motion.div>
@@ -179,7 +179,7 @@ export default function Home() {
                   </div>
                   
                   <Link to="/billing" className="block w-full py-3 border border-brand-border text-center text-[10px] font-bold uppercase tracking-widest text-white hover:bg-brand-accent hover:text-brand-darker hover:border-brand-accent transition-all">
-                    Initialize
+                    Buy Now
                   </Link>
                 </div>
               ))}
@@ -218,7 +218,7 @@ export default function Home() {
                   </div>
                   
                   <Link to="/billing" className="block w-full py-4 bg-brand-dark border border-brand-border text-center text-[10px] font-bold uppercase tracking-widest text-white hover:border-brand-accent transition-all">
-                    Configure Node
+                    Buy Now
                   </Link>
                 </div>
               ))}
