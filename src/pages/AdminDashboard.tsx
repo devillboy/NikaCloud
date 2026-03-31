@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Link, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getApiBase } from '../lib/api';
 
 const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (open: boolean) => void }) => {
   const location = useLocation();
@@ -149,9 +150,7 @@ const Analytics = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
-          ? '' 
-          : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+        const apiBase = getApiBase();
 
         const response = await fetch(`${apiBase}/api/admin/stats`);
         const data = await response.json();
@@ -273,9 +272,7 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
-          ? '' 
-          : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+        const apiBase = getApiBase();
 
         const response = await fetch(`${apiBase}/api/admin/users`);
         const data = await response.json();
@@ -497,9 +494,7 @@ const NotificationSender = () => {
     
     setSending(true);
     try {
-      const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
-        ? '' 
-        : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+      const apiBase = getApiBase();
 
       const endpoint = type === 'email' ? '/api/admin/send-email-announcement' : '/api/admin/send-push-announcement';
       

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, AlertCircle, CheckCircle2, XCircle, Search, Eye, Loader2 } from 'lucide-react';
+import { getApiBase } from '../lib/api';
 
 export const AdminPayments = () => {
   const [payments, setPayments] = useState<any[]>([]);
@@ -10,9 +11,7 @@ export const AdminPayments = () => {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
-        ? '' 
-        : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+      const apiBase = getApiBase();
         
       const response = await fetch(`${apiBase}/api/admin/payments`);
       const data = await response.json();
@@ -31,9 +30,7 @@ export const AdminPayments = () => {
   const verifyPayment = async (payment: any) => {
     setVerifying(payment.id);
     try {
-      const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
-        ? '' 
-        : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+      const apiBase = getApiBase();
 
       const response = await fetch(`${apiBase}/api/admin/payments/${payment.id}/verify`, {
         method: 'POST'
@@ -51,9 +48,7 @@ export const AdminPayments = () => {
 
   const handleManualAction = async (paymentId: string, status: 'Approved' | 'Rejected', payment: any) => {
     try {
-      const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
-        ? '' 
-        : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+      const apiBase = getApiBase();
 
       const response = await fetch(`${apiBase}/api/admin/payments/${paymentId}/action`, {
         method: 'POST',

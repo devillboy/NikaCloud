@@ -22,6 +22,7 @@ import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/fi
 import { db, auth } from "../firebase";
 import { GoogleGenAI } from "@google/genai";
 import { Discord } from "../components/Icons";
+import { getApiBase } from "../lib/api";
 
 enum OperationType {
   CREATE = 'create',
@@ -66,7 +67,8 @@ export default function Billing() {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const res = await fetch("/api/plans");
+        const apiBase = getApiBase();
+        const res = await fetch(`${apiBase}/api/plans`);
         if (!res.ok) throw new Error(`Infrastructure API Error: ${res.status}`);
         const data = await res.json();
         setPlans(data);
@@ -115,9 +117,7 @@ export default function Billing() {
         ? Math.floor(basePrice * duration * 0.8) 
         : basePrice * duration;
 
-      const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
-        ? '' 
-        : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+      const apiBase = getApiBase();
 
       // Call Backend API
       const response = await fetch(`${apiBase}/api/payments`, {
