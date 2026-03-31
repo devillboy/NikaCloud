@@ -10,7 +10,11 @@ export const AdminPayments = () => {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/payments');
+      const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
+        ? '' 
+        : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+        
+      const response = await fetch(`${apiBase}/api/admin/payments`);
       const data = await response.json();
       setPayments(data);
     } catch (error) {
@@ -27,7 +31,11 @@ export const AdminPayments = () => {
   const verifyPayment = async (payment: any) => {
     setVerifying(payment.id);
     try {
-      const response = await fetch(`/api/admin/payments/${payment.id}/verify`, {
+      const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
+        ? '' 
+        : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+
+      const response = await fetch(`${apiBase}/api/admin/payments/${payment.id}/verify`, {
         method: 'POST'
       });
       const data = await response.json();
@@ -43,7 +51,11 @@ export const AdminPayments = () => {
 
   const handleManualAction = async (paymentId: string, status: 'Approved' | 'Rejected', payment: any) => {
     try {
-      const response = await fetch(`/api/admin/payments/${paymentId}/action`, {
+      const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
+        ? '' 
+        : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+
+      const response = await fetch(`${apiBase}/api/admin/payments/${paymentId}/action`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })

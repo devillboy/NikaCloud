@@ -149,7 +149,11 @@ const Analytics = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/admin/stats');
+        const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
+          ? '' 
+          : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+
+        const response = await fetch(`${apiBase}/api/admin/stats`);
         const data = await response.json();
         setServers(data.servers || []);
         setUsersCount(data.usersCount || 0);
@@ -269,7 +273,11 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/admin/users');
+        const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
+          ? '' 
+          : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+
+        const response = await fetch(`${apiBase}/api/admin/users`);
         const data = await response.json();
         setUsers(data);
       } catch (error) {

@@ -5,6 +5,7 @@ import {
   CreditCard, 
   LayoutDashboard, 
   ShieldCheck, 
+  Shield,
   AlertCircle, 
   CheckCircle2, 
   Loader2,
@@ -114,8 +115,12 @@ export default function Billing() {
         ? Math.floor(basePrice * duration * 0.8) 
         : basePrice * duration;
 
+      const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
+        ? '' 
+        : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+
       // Call Backend API
-      const response = await fetch("/api/payments", {
+      const response = await fetch(`${apiBase}/api/payments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -166,6 +171,29 @@ export default function Billing() {
               <div className="mb-10">
                 <h1 className="text-4xl font-bold mb-4">Configure Your <span className="text-orange-500">Node</span></h1>
                 <p className="text-gray-400">Select your service category and plan to begin deployment.</p>
+              </div>
+
+              {/* Security & Automation Info */}
+              <div className="mb-10">
+                <div className="glass-panel p-6 rounded-3xl border border-orange-500/20 bg-orange-500/5 flex flex-col sm:flex-row items-center gap-6">
+                  <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center shrink-0">
+                    <Shield className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <div className="flex-1 text-center sm:text-left">
+                    <h3 className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Secure AI Automation</h3>
+                    <p className="text-slate-400 text-xs leading-relaxed">
+                      AI-powered payment verification & instant server provisioning. 100% secure infrastructure.
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <div className="px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold uppercase tracking-wider">
+                      AI Verified
+                    </div>
+                    <div className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-wider">
+                      Auto-Deploy
+                    </div>
+                  </div>
+                </div>
               </div>
               
               {/* Category Selection */}

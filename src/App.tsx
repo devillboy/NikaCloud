@@ -31,15 +31,25 @@ export default function App() {
   useEffect(() => {
     const fetchLockStatus = async () => {
       try {
-        const healthRes = await fetch('/api/health');
+        // Use absolute URL if needed, but relative should work if proxied or same origin
+        // For Vercel/External domains, we might need the full URL
+        const apiBase = window.location.hostname.includes('localhost') || window.location.hostname.includes('run.app') 
+          ? '' 
+          : 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+
+        const healthRes = await fetch(`${apiBase}/api/health`);
         console.log("HEALTH CHECK:", await healthRes.json());
         
-        const response = await fetch('/api/lock-status');
+        const response = await fetch(`${apiBase}/api/lock-status`);
         const data = await response.json();
         setLockData(data);
         setTimeLeft(data.remainingTime);
       } catch (error) {
         console.error("Error fetching lock status:", error);
+        // Fallback: If fetch fails, assume locked with 3 hours for display
+        if (!lockData) {
+          setTimeLeft(3 * 60 * 60 * 1000);
+        }
       }
     };
 

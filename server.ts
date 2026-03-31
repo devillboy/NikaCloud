@@ -66,7 +66,8 @@ async function startServer() {
     'http://nikacloud.in',
     'http://www.nikacloud.in',
     'http://localhost:3000',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    /\.vercel\.app$/ // Allow all Vercel subdomains
   ];
 
   app.use(cors({
@@ -211,9 +212,20 @@ async function startServer() {
     }
   });
 
+  // RATE LIMITING (Simple memory-based)
+  const paymentRateLimit = new Map<string, number>();
+
   // Payment Submission (Backend Setup)
   app.post("/api/payments", upload.single("screenshot"), async (req, res) => {
     const { userId, userEmail, planId, planName, amount, duration, upiId, utrId, method, screenshot } = req.body;
+    
+    // Simple Rate Limit: 1 request per 30 seconds per user
+    const now = Date.now();
+    const lastRequest = paymentRateLimit.get(userId) || 0;
+    if (now - lastRequest < 30000) {
+      return res.status(429).json({ error: "Too many requests. Please wait 30 seconds." });
+    }
+    paymentRateLimit.set(userId, now);
     
     try {
       const expiryDate = new Date();
@@ -249,9 +261,19 @@ async function startServer() {
               },
             },
             {
-              text: `Analyze this payment screenshot for NikaCloud. 
-              User claims to have paid ₹${amount} for ${planName}.
-              UTR ID: ${utrId}. Return ONLY 'Genuine' or 'Fake'.`,
+              text: `CRITICAL SECURITY AUDIT: Analyze this UPI payment screenshot for NikaCloud.
+              Expected Payment Details:
+              - Amount: ₹${amount}
+              - Recipient: nikacloud@nyes (or similar variations)
+              - UTR ID: ${utrId}
+              
+              INSTRUCTIONS:
+              1. Verify if the amount in the screenshot matches ₹${amount}.
+              2. Verify if the UTR/Transaction ID in the screenshot matches ${utrId}.
+              3. Check for signs of digital manipulation (Photoshop, fake fonts, mismatched alignments).
+              4. Confirm the payment status is 'Success' or 'Completed'.
+              
+              Return EXACTLY one word: 'Genuine' if all checks pass perfectly, or 'Fake' if there is ANY discrepancy or sign of fraud.`,
             },
           ],
         });
