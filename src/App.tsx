@@ -70,21 +70,8 @@ export default function App() {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // DOMAIN KILL SWITCH: Protects against code theft
-  const authorizedDomains = [
-    'ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app',
-    'ais-pre-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app',
-    'nikacloud.in',
-    'www.nikacloud.in',
-    'localhost',
-    '127.0.0.1'
-  ];
-
-  const currentDomain = window.location.hostname;
-  const isUnauthorized = !authorizedDomains.includes(currentDomain);
-  
-  // Set this to true to manually lock the site, or it will auto-lock if unauthorized
-  const isLocked = (lockData?.isLocked ?? true) || isUnauthorized;
+  // Set this to true to manually lock the site
+  const isLocked = lockData?.isLocked ?? true;
 
   return (
     <BrowserRouter>
@@ -95,7 +82,7 @@ export default function App() {
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none select-none flex flex-wrap gap-20 rotate-[-25deg] scale-150">
               {Array.from({ length: 100 }).map((_, i) => (
                 <span key={i} className="text-white font-bold text-2xl whitespace-nowrap">
-                  {isUnauthorized ? "STOLEN CODE DETECTED" : "PAYMENT DUE"}
+                  PAYMENT DUE
                 </span>
               ))}
             </div>
@@ -110,18 +97,15 @@ export default function App() {
               </div>
               
               <h1 className="text-5xl font-bold text-white mb-6 tracking-tight">
-                {isUnauthorized ? "Unauthorized Domain" : "Payment Is Due"}
+                Payment Is Due
               </h1>
               
               <div className="space-y-6 text-gray-400 text-lg leading-relaxed">
                 <p>
-                  {isUnauthorized 
-                    ? "This application is running on an unauthorized domain. The source code has been protected and restricted."
-                    : "This infrastructure terminal has been restricted due to an outstanding balance. Please complete your payment to restore full access."
-                  }
+                  This infrastructure terminal has been restricted due to an outstanding balance. Please complete your payment to restore full access.
                 </p>
                 
-                {!isUnauthorized && timeLeft > 0 && (
+                {timeLeft > 0 && (
                   <div className="flex flex-col items-center gap-4 p-8 bg-orange-500/10 border border-orange-500/20 rounded-3xl">
                     <div className="flex items-center gap-3 text-orange-500 font-bold uppercase tracking-widest text-sm">
                       <Clock className="w-5 h-5" />
@@ -138,7 +122,7 @@ export default function App() {
                 </div>
 
                 <p className="text-sm uppercase tracking-[0.2em] font-bold text-orange-500/50">
-                  {isUnauthorized ? "LEGAL ACTION MAY BE TAKEN" : "Please Send the payment immediately"}
+                  Please Send the payment immediately
                 </p>
               </div>
 

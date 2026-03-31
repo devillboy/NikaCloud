@@ -9,18 +9,8 @@ export default function Navbar() {
   const location = useLocation();
   const { user, isAdmin, logout } = useAuth();
   
-  // HIDDEN DOMAIN CHECK: Protects against code theft
-  const authorized = [
-    'ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app',
-    'ais-pre-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app',
-    'localhost',
-    '127.0.0.1'
-  ];
-  const isStolen = !authorized.includes(window.location.hostname);
-
   const isAuthPage = location.pathname.startsWith('/admin') || location.pathname === '/login' || location.pathname === '/claim-free-server';
 
-  if (isStolen) return <div className="fixed inset-0 z-[10000] bg-red-600 text-white flex items-center justify-center font-bold text-3xl">STOLEN CODE DETECTED - CONTACT SOHAM</div>;
   if (isAuthPage) return null;
 
   const navLinks = [

@@ -37,15 +37,17 @@ async function startServer() {
     try {
       const lockDoc = await getDoc(doc(db, "settings", LOCK_DOC_ID));
       let expiry;
+      const now = Date.now();
       
-      if (!lockDoc.exists()) {
-        expiry = Date.now() + LOCK_DURATION;
+      if (!lockDoc.exists() || (lockDoc.data().expiry < now)) {
+        // Reset timer to 3 hours if it doesn't exist or is expired
+        expiry = now + LOCK_DURATION;
         await setDoc(doc(db, "settings", LOCK_DOC_ID), { expiry });
+        console.log(`TIMER RESET: New expiry at ${new Date(expiry).toISOString()}`);
       } else {
         expiry = lockDoc.data().expiry;
       }
 
-      const now = Date.now();
       const isLocked = now < expiry;
       const remainingTime = Math.max(0, expiry - now);
       res.json({ isLocked, remainingTime, expiry });
