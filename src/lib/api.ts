@@ -8,9 +8,14 @@ export const getApiBase = () => {
     return `http://${hostname}:3000`;
   }
   
-  // If we are on a run.app or vercel.app domain, we can use relative paths (same origin)
-  if (hostname.includes('run.app') || hostname.includes('vercel.app')) {
+  // If we are on a run.app domain, we can use relative paths (same origin)
+  if (hostname.includes('run.app')) {
     return '';
+  }
+  
+  // If we are on a vercel.app domain, we must use the production backend URL
+  if (hostname.includes('vercel.app')) {
+    return 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
   }
   
   // Otherwise, use the hardcoded production URL

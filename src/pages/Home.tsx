@@ -3,6 +3,7 @@ import { ChevronRight, Cpu, Globe, Shield, Zap, Server, Gamepad2, HardDrive, Clo
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Discord } from '../components/Icons';
+import { getApiBase } from '../lib/api';
 
 export default function Home() {
   const [features, setFeatures] = React.useState<any[]>([]);
@@ -14,11 +15,12 @@ export default function Home() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
+        const apiBase = getApiBase();
         const [featuresRes, botRes, mcRes, vpsRes] = await Promise.all([
-          fetch('/api/features'),
-          fetch('/api/plans/bot'),
-          fetch('/api/plans/minecraft'),
-          fetch('/api/plans/vps')
+          fetch(`${apiBase}/api/features`),
+          fetch(`${apiBase}/api/plans/bot`),
+          fetch(`${apiBase}/api/plans/minecraft`),
+          fetch(`${apiBase}/api/plans/vps`)
         ]);
 
         const [featuresData, botData, mcData, vpsData] = await Promise.all([
