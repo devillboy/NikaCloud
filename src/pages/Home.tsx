@@ -33,11 +33,10 @@ export default function Home() {
       } catch (error) {
         console.error("Error fetching infrastructure data:", error);
         // Fallback to empty arrays to prevent UI crash
-        setFeatures([]);
-        setBotPlans([]);
-        setMinecraftPlans([]);
-        setVpsPlans([]);
-        // Optionally, you could set an error state here to show a UI message
+        setFeatures([{ title: "Fallback Feature", description: "Fallback Description", icon: "Cpu" }]);
+        setBotPlans([{ id: "bot-1", name: "Fallback Bot Plan", price: "₹0", ram: "0 GB", ssd: "0 GB", cpu: "0%", ports: 0, backups: 0, type: "bot" }]);
+        setMinecraftPlans([{ id: "mc-1", name: "Fallback MC Plan", price: "₹0", ram: "0 GB", ssd: "0 GB", cpu: "0%", type: "minecraft" }]);
+        setVpsPlans([{ id: "vps-1", name: "Fallback VPS Plan", price: "₹0", cores: "0", ram: "0 GB", storage: "0 GB", type: "vps" }]);
       } finally {
         setLoading(false);
       }
