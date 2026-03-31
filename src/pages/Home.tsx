@@ -16,16 +16,30 @@ export default function Home() {
     const fetchData = async () => {
       try {
         const apiBase = getApiBase();
+        console.log("Fetching data from:", apiBase);
+        
         const featuresRes = await fetch(`${apiBase}/api/features`);
         const featuresData = await featuresRes.json();
+        console.log("Features data:", featuresData);
         setFeatures(featuresData);
         
-        const plansRes = await fetch(`${apiBase}/api/plans`);
-        const plansData = await plansRes.json();
+        const [botRes, mcRes, vpsRes] = await Promise.all([
+          fetch(`${apiBase}/api/plans/bot`),
+          fetch(`${apiBase}/api/plans/minecraft`),
+          fetch(`${apiBase}/api/plans/vps`)
+        ]);
         
-        setBotPlans(plansData.filter((p: any) => p.type === 'bot'));
-        setMinecraftPlans(plansData.filter((p: any) => p.type === 'minecraft'));
-        setVpsPlans(plansData.filter((p: any) => p.type === 'vps'));
+        const botData = await botRes.json();
+        const mcData = await mcRes.json();
+        const vpsData = await vpsRes.json();
+        
+        console.log("Bot data:", botData);
+        console.log("Minecraft data:", mcData);
+        console.log("VPS data:", vpsData);
+        
+        setBotPlans(botData);
+        setMinecraftPlans(mcData);
+        setVpsPlans(vpsData);
       } catch (error) {
         console.error("Error fetching infrastructure data:", error);
         setFeatures([]);
