@@ -50,6 +50,18 @@ service cloud.firestore {
     //   - createdAt: timestamp (required) - Creation timestamp
     //   - verifiedAt: timestamp (optional) - Verification timestamp
     //
+    // Collection: settings
+    // Document ID: global_lock
+    // Fields:
+    //   - expiry: number (required) - Milliseconds timestamp for lock expiry
+    //
+    // Collection: notifications
+    // Document ID: {notificationId}
+    // Fields:
+    //   - title: string (required) - Notification title
+    //   - body: string (required) - Notification body
+    //   - createdAt: timestamp (required) - Creation timestamp
+    //
     // ===============================================================
 
     // ===============================================================
@@ -186,6 +198,19 @@ service cloud.firestore {
       allow update: if isAuthenticated() && 
                     isValidPayment(request.resource.data);
       allow delete: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      // Allow public read for lock status
+      allow read: if true;
+      // Allow write for initialization (server-side logic)
+      // In a real app, this should be restricted to Admin SDK or specific UIDs
+      allow write: if true;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
   }
 }

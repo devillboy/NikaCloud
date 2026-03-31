@@ -107,9 +107,6 @@ export default function Billing() {
     setError(null);
 
     try {
-      const expiryDate = new Date();
-      expiryDate.setMonth(expiryDate.getMonth() + duration);
-
       const basePrice = typeof selectedPlan.price === 'string' 
         ? parseInt(selectedPlan.price.replace(/[^0-9]/g, '')) 
         : selectedPlan.price;
@@ -117,91 +114,43 @@ export default function Billing() {
         ? Math.floor(basePrice * duration * 0.8) 
         : basePrice * duration;
 
-      // 1. Save initial payment record
-      let paymentRef;
-      try {
-        paymentRef = await addDoc(collection(db, "payments"), {
+      // Call Backend API
+      const response = await fetch("/api/payments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           userId: auth.currentUser.uid,
           userEmail: auth.currentUser.email,
           planId: selectedPlan.id,
           planName: selectedPlan.name,
           amount: totalPrice,
           duration,
-          expiryDate: expiryDate.toISOString(),
           upiId: upiId || 'N/A',
           utrId: utrId || 'N/A',
           method: paymentMethod,
-          screenshotUrl: screenshot || '',
-          status: "Pending",
-          createdAt: serverTimestamp(),
-        });
-      } catch (err) {
-        handleFirestoreError(err, OperationType.CREATE, "payments");
-      }
-
-      // 2. AI Verification (only for UPI)
-      if (paymentMethod === 'upi' && screenshot) {
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-        const response = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
-          contents: [
-            {
-              inlineData: {
-                mimeType: "image/png",
-                data: screenshot.split(',')[1] || screenshot,
-              },
-            },
-            {
-              text: `Analyze this payment screenshot for NikaCloud. 
-              User claims to have paid ${selectedPlan.price} for ${selectedPlan.name}.
-              UTR ID: ${utrId}. Return ONLY 'Genuine' or 'Fake'.`,
-            },
-          ],
-        });
-
-        const result = response.text?.trim();
-        if (result !== "Genuine") {
-          await updateDoc(doc(db, "payments", paymentRef!.id), {
-            status: "Rejected",
-            reason: "AI detected potential fraud.",
-            verifiedAt: serverTimestamp(),
-          });
-          setVerifying(false);
-          navigate("/payment-result", { state: { status: 'failed', plan: selectedPlan } });
-          return;
-        }
-      }
-
-      // 3. Approve and Create Server
-      await updateDoc(doc(db, "payments", paymentRef!.id), {
-        status: "Approved",
-        verifiedAt: serverTimestamp(),
+          screenshot: screenshot || '',
+        }),
       });
 
-      await addDoc(collection(db, "servers"), {
-        name: `${selectedPlan.name} Node`,
-        type: selectedPlan.type,
-        status: "Starting",
-        ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
-        userId: auth.currentUser.uid,
-        planId: selectedPlan.id,
-        specs: {
-          ram: selectedPlan.ram,
-          cpu: selectedPlan.cpu,
-          ssd: selectedPlan.ssd || selectedPlan.storage
-        },
-        duration,
-        expiresAt: expiryDate.toISOString(),
-        createdAt: serverTimestamp(),
-      });
+      const data = await response.json();
 
-      setVerifying(false);
-      navigate("/payment-result", { state: { status: 'success', plan: selectedPlan } });
+      if (!response.ok) {
+        throw new Error(data.error || "Payment processing failed.");
+      }
 
-    } catch (err) {
+      if (data.status === "rejected") {
+        navigate("/payment-result", { state: { status: 'failed', plan: selectedPlan, reason: data.reason } });
+      } else if (data.status === "success") {
+        navigate("/payment-result", { state: { status: 'success', plan: selectedPlan } });
+      }
+
+    } catch (err: any) {
       console.error("Verification Error:", err);
+      setError(err.message || "Payment processing error. Please contact support on Discord.");
+    } finally {
       setVerifying(false);
-      setError("Payment processing error. Please contact support on Discord.");
     }
   };
 

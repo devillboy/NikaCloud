@@ -5,6 +5,64 @@ import { Link } from 'react-router-dom';
 import { Discord } from '../components/Icons';
 
 export default function Home() {
+  const [features, setFeatures] = React.useState<any[]>([]);
+  const [botPlans, setBotPlans] = React.useState<any[]>([]);
+  const [minecraftPlans, setMinecraftPlans] = React.useState<any[]>([]);
+  const [vpsPlans, setVpsPlans] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [featuresRes, botRes, mcRes, vpsRes] = await Promise.all([
+          fetch('/api/features'),
+          fetch('/api/plans/bot'),
+          fetch('/api/plans/minecraft'),
+          fetch('/api/plans/vps')
+        ]);
+
+        const [featuresData, botData, mcData, vpsData] = await Promise.all([
+          featuresRes.json(),
+          botRes.json(),
+          mcRes.json(),
+          vpsRes.json()
+        ]);
+
+        setFeatures(featuresData);
+        setBotPlans(botData);
+        setMinecraftPlans(mcData);
+        setVpsPlans(vpsData);
+      } catch (error) {
+        console.error("Error fetching infrastructure data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const getIcon = (name: string) => {
+    switch (name) {
+      case 'Cpu': return <Cpu className="w-8 h-8 text-orange-500" />;
+      case 'Shield': return <Shield className="w-8 h-8 text-orange-500" />;
+      case 'Globe': return <Globe className="w-8 h-8 text-orange-500" />;
+      case 'Zap': return <Zap className="w-8 h-8 text-orange-500" />;
+      default: return <Server className="w-8 h-8 text-orange-500" />;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Activity className="w-10 h-10 text-orange-500 animate-pulse" />
+          <p className="font-mono text-[10px] uppercase tracking-widest text-gray-500">Syncing Infrastructure...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full overflow-hidden bg-black text-white">
       {/* Hero Section */}
@@ -129,24 +187,8 @@ export default function Home() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <Zap className="w-8 h-8 text-orange-500" />,
-                title: "Lightning Fast",
-                description: "Powered by the latest NVMe SSDs and high-clock CPUs for zero-lag performance."
-              },
-              {
-                icon: <Shield className="w-8 h-8 text-orange-500" />,
-                title: "DDoS Protection",
-                description: "Enterprise-grade mitigation to keep your servers online 24/7, automatically."
-              },
-              {
-                icon: <Globe className="w-8 h-8 text-orange-500" />,
-                title: "Global Network",
-                description: "Premium tier-1 blend network ensuring low latency across the globe."
-              }
-            ].map((feature, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
@@ -156,7 +198,7 @@ export default function Home() {
                 className="p-10 rounded-3xl bg-white/5 border border-white/10 hover:border-orange-500/30 transition-all group"
               >
                 <div className="mb-8 group-hover:scale-110 transition-transform duration-500">
-                  {feature.icon}
+                  {getIcon(feature.icon)}
                 </div>
                 <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
                 <p className="text-gray-400 leading-relaxed">{feature.description}</p>
@@ -181,18 +223,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[
-                { id: "bot-1", name: "Bot Host Plan 1", price: "₹35", ram: "2 GB", ssd: "8 GB", cpu: "50%", ports: 1, backups: 1 },
-                { id: "bot-2", name: "Bot Host Plan 2", price: "₹70", ram: "4 GB", ssd: "15 GB", cpu: "100%", ports: 2, backups: 1 },
-                { id: "bot-3", name: "Bot Host Plan 3", price: "₹105", ram: "6 GB", ssd: "30 GB", cpu: "150%", ports: 2, backups: 2 },
-                { id: "bot-4", name: "Bot Host Plan 4", price: "₹140", ram: "8 GB", ssd: "45 GB", cpu: "200%", ports: 3, backups: 3 },
-                { id: "bot-5", name: "Bot Host Plan 5", price: "₹175", ram: "10 GB", ssd: "60 GB", cpu: "300%", ports: 4, backups: 4 },
-                { id: "bot-6", name: "Bot Host Plan 6", price: "₹210", ram: "12 GB", ssd: "80 GB", cpu: "400%", ports: 6, backups: 5 },
-                { id: "bot-7", name: "Bot Host Plan 7", price: "₹245", ram: "16 GB", ssd: "100 GB", cpu: "600%", ports: 8, backups: 6 },
-                { id: "bot-8", name: "Bot Host Plan 8", price: "₹280", ram: "24 GB", ssd: "150 GB", cpu: "850%", ports: 10, backups: 10, popular: true },
-                { id: "bot-9", name: "Bot Host Plan 9", price: "₹315", ram: "32 GB", ssd: "200 GB", cpu: "1000%", ports: 12, backups: 12 },
-                { id: "bot-10", name: "Bot Host Plan 10", price: "₹350", ram: "64 GB", ssd: "400 GB", cpu: "2000%", ports: 24, backups: 24 }
-              ].map((plan, i) => (
+              {botPlans.map((plan, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, y: 20 }}
@@ -244,18 +275,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[
-                { name: "Plan 1", price: "₹99", ram: "2 GB", ssd: "8 GB", cpu: "50%" },
-                { name: "Plan 2", price: "₹199", ram: "4 GB", ssd: "15 GB", cpu: "100%" },
-                { name: "Plan 3", price: "₹299", ram: "6 GB", ssd: "25 GB", cpu: "150%" },
-                { name: "Plan 4", price: "₹399", ram: "8 GB", ssd: "45 GB", cpu: "200%" },
-                { name: "Plan 5", price: "₹499", ram: "10 GB", ssd: "60 GB", cpu: "300%" },
-                { name: "Plan 6", price: "₹599", ram: "12 GB", ssd: "80 GB", cpu: "400%" },
-                { name: "Plan 7", price: "₹699", ram: "16 GB", ssd: "100 GB", cpu: "600%" },
-                { name: "Plan 8", price: "₹799", ram: "24 GB", ssd: "150 GB", cpu: "850%" },
-                { name: "Plan 9", price: "₹899", ram: "32 GB", ssd: "200 GB", cpu: "1000%" },
-                { name: "Plan 10", price: "₹999", ram: "64 GB", ssd: "400 GB", cpu: "2000%", popular: true }
-              ].map((plan, i) => (
+              {minecraftPlans.map((plan, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, y: 20 }}
@@ -298,13 +318,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                { name: "VPS 1", price: "₹699", cores: "2 vCore", ram: "8 GB", storage: "48 GB" },
-                { name: "VPS 2", price: "₹1,399", cores: "4 vCore", ram: "16 GB", storage: "96 GB" },
-                { name: "VPS 3", price: "₹2,199", cores: "6 vCore", ram: "24 GB", storage: "112 GB" },
-                { name: "VPS 4", price: "₹2,999", cores: "8 vCore", ram: "32 GB", storage: "128 GB" },
-                { name: "VPS 5", price: "₹4,699", cores: "16 vCore", ram: "64 GB", storage: "256 GB", popular: true }
-              ].map((plan, i) => (
+              {vpsPlans.map((plan, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, y: 20 }}

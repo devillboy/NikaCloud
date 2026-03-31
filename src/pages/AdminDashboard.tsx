@@ -1,8 +1,6 @@
 import { AdminPayments } from './AdminPayments';
 import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../firebase';
 import { 
   LayoutDashboard, 
   Server, 
@@ -151,12 +149,10 @@ const Analytics = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const serversSnapshot = await getDocs(collection(db, 'servers'));
-        const serversList = serversSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setServers(serversList);
-
-        const usersSnapshot = await getDocs(collection(db, 'users'));
-        setUsersCount(usersSnapshot.size);
+        const response = await fetch('/api/admin/stats');
+        const data = await response.json();
+        setServers(data.servers || []);
+        setUsersCount(data.usersCount || 0);
       } catch (error) {
         console.error("Error fetching admin data:", error);
       } finally {
@@ -273,9 +269,9 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const usersSnapshot = await getDocs(collection(db, 'users'));
-        const usersList = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setUsers(usersList);
+        const response = await fetch('/api/admin/users');
+        const data = await response.json();
+        setUsers(data);
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {
@@ -331,9 +327,9 @@ const ServerManagement = () => {
   useEffect(() => {
     const fetchServers = async () => {
       try {
-        const serversSnapshot = await getDocs(collection(db, 'servers'));
-        const serversList = serversSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setServers(serversList);
+        const response = await fetch('/api/admin/servers');
+        const data = await response.json();
+        setServers(data);
       } catch (error) {
         console.error("Error fetching servers:", error);
       } finally {
@@ -361,9 +357,15 @@ const ServerManagement = () => {
   const handleDeleteServer = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this server?')) {
       try {
-        await deleteDoc(doc(db, 'servers', id));
-        setServers(servers.filter(s => s.id !== id));
-        alert('Server deleted successfully');
+        const response = await fetch(`/api/admin/servers/${id}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          setServers(servers.filter(s => s.id !== id));
+          alert('Server deleted successfully');
+        } else {
+          throw new Error('Failed to delete server');
+        }
       } catch (error) {
         console.error('Error deleting server:', error);
         alert('Failed to delete server');

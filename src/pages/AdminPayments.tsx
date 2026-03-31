@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase';
-import { GoogleGenAI } from "@google/genai";
 import { ShieldCheck, AlertCircle, CheckCircle2, XCircle, Search, Eye, Loader2 } from 'lucide-react';
 
 export const AdminPayments = () => {
@@ -13,11 +10,9 @@ export const AdminPayments = () => {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const paymentsSnapshot = await getDocs(collection(db, 'payments'));
-      const paymentsList = paymentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
-      // Sort by newest first
-      paymentsList.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-      setPayments(paymentsList);
+      const response = await fetch('/api/admin/payments');
+      const data = await response.json();
+      setPayments(data);
     } catch (error) {
       console.error("Error fetching payments:", error);
     } finally {
@@ -29,59 +24,14 @@ export const AdminPayments = () => {
     fetchPayments();
   }, []);
 
-  const createServerForPayment = async (payment: any) => {
-    try {
-      await addDoc(collection(db, "servers"), {
-        name: `${payment.planName || 'Minecraft'} Server`,
-        type: "Minecraft",
-        status: "Starting",
-        ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
-        userId: payment.userId,
-        planId: payment.planId,
-        panelId: Math.floor(Math.random() * 10000).toString(),
-        specs: payment.specs || { ram: "Unknown", cpu: "Unknown", ssd: "Unknown" },
-        createdAt: serverTimestamp(),
-      });
-    } catch (err) {
-      console.error("Error creating server for payment:", err);
-      alert("Failed to create server automatically. Please check Firestore rules or logs.");
-    }
-  };
-
   const verifyPayment = async (payment: any) => {
     setVerifying(payment.id);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          {
-            inlineData: {
-              mimeType: "image/png",
-              data: payment.screenshotUrl.split(',')[1] || payment.screenshotUrl,
-            },
-          },
-          {
-            text: `Analyze this payment screenshot. 
-            The user claims to have paid ${payment.amount} for ${payment.planName}.
-            User UPI ID: ${payment.upiId || 'Not provided'}
-            Transaction UTR ID: ${payment.utrId || 'Not provided'}
-            Is it a genuine payment to nikacloud@nyes? 
-            Check if the UTR ID and amount match the screenshot.
-            Return ONLY 'Genuine' or 'Fake'.`,
-          },
-        ],
+      const response = await fetch(`/api/admin/payments/${payment.id}/verify`, {
+        method: 'POST'
       });
-      
-      const result = response.text?.trim();
-      if (result === 'Genuine') {
-        await updateDoc(doc(db, 'payments', payment.id), { status: 'Approved', verifiedAt: serverTimestamp() });
-        await createServerForPayment(payment);
-        alert("Payment verified as genuine! Server creation triggered.");
-      } else {
-        await updateDoc(doc(db, 'payments', payment.id), { status: 'Rejected', verifiedAt: serverTimestamp() });
-        alert("Payment verified as fake!");
-      }
+      const data = await response.json();
+      alert(data.message || 'Verification complete');
       fetchPayments();
     } catch (error) {
       console.error("Error verifying payment:", error);
@@ -93,11 +43,13 @@ export const AdminPayments = () => {
 
   const handleManualAction = async (paymentId: string, status: 'Approved' | 'Rejected', payment: any) => {
     try {
-      await updateDoc(doc(db, 'payments', paymentId), { status, verifiedAt: serverTimestamp() });
-      if (status === 'Approved') {
-        await createServerForPayment(payment);
-      }
-      alert(`Payment ${status} manually.`);
+      const response = await fetch(`/api/admin/payments/${paymentId}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      const data = await response.json();
+      alert(data.message || `Payment ${status} manually.`);
       fetchPayments();
     } catch (error) {
       console.error("Error updating payment:", error);

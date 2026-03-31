@@ -6,14 +6,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { doc, updateDoc, collection, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
-const EGGS = [
-  { id: 1, name: 'Vanilla Minecraft', description: 'Standard Minecraft server' },
-  { id: 2, name: 'Paper', description: 'High performance, plugin support' },
-  { id: 4, name: 'Forge', description: 'Modded Minecraft support' },
-  { id: 15, name: 'Node.js', description: 'Host Discord bots & web apps' },
-  { id: 16, name: 'Python', description: 'Host Python scripts & bots' }
-];
-
 export default function ClaimFreeServer() {
   const { user, hasClaimedFreeServer, loading } = useAuth();
   const navigate = useNavigate();
@@ -21,10 +13,31 @@ export default function ClaimFreeServer() {
   const [claimStatus, setClaimStatus] = useState<'idle' | 'provisioning' | 'installing' | 'finalizing'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [selectedEgg, setSelectedEgg] = useState(EGGS[1].id); // Default to Paper
+  const [eggs, setEggs] = useState<any[]>([]);
+  const [loadingEggs, setLoadingEggs] = useState(true);
+  const [selectedEgg, setSelectedEgg] = useState<number | null>(null);
   const [serverName, setServerName] = useState('');
   const [credentials, setCredentials] = useState<{username: string, password: string, panelUrl: string} | null>(null);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const fetchEggs = async () => {
+      try {
+        const response = await fetch('/api/eggs');
+        const data = await response.json();
+        setEggs(data);
+        if (data.length > 0) {
+          setSelectedEgg(data[1]?.id || data[0].id); // Default to Paper or first available
+        }
+      } catch (err) {
+        console.error("Error fetching eggs:", err);
+      } finally {
+        setLoadingEggs(false);
+      }
+    };
+
+    fetchEggs();
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -74,30 +87,7 @@ export default function ClaimFreeServer() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       setClaimStatus('finalizing');
 
-      // Update user document to mark free server as claimed
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        hasClaimedFreeServer: true
-      });
-
-      // Create server document in Firestore
-      const serverRef = doc(collection(db, 'servers'));
-      await setDoc(serverRef, {
-        name: serverName.trim(),
-        type: EGGS.find(e => e.id === selectedEgg)?.name || 'Minecraft',
-        status: 'Starting',
-        ip: 'Pending Allocation...',
-        userId: user.uid,
-        planId: 'free-tier',
-        panelId: data.serverDetails.id,
-        specs: {
-          ram: '5GB',
-          cpu: '100%',
-          ssd: '10GB'
-        },
-        createdAt: serverTimestamp()
-      });
-
+      // Mark as success and show credentials
       await new Promise(resolve => setTimeout(resolve, 1000));
       setCredentials(data.credentials);
       setSuccess(true);
@@ -267,34 +257,41 @@ export default function ClaimFreeServer() {
                     Environment Selection
                   </h3>
                   <div className="space-y-3">
-                    {EGGS.map(egg => (
-                      <label 
-                        key={egg.id} 
-                        className={`flex items-center gap-4 p-4 cursor-pointer border transition-all duration-300 ${
-                          selectedEgg === egg.id 
-                            ? 'bg-brand-accent/5 border-brand-accent' 
-                            : 'bg-brand-darker border-brand-border hover:border-slate-700'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 border flex items-center justify-center transition-colors ${selectedEgg === egg.id ? 'border-brand-accent bg-brand-accent' : 'border-slate-700'}`}>
-                          {selectedEgg === egg.id && <CheckCircle2 className="w-3 h-3 text-brand-darker" />}
-                        </div>
-                        <input 
-                          type="radio" 
-                          name="eggType" 
-                          value={egg.id} 
-                          checked={selectedEgg === egg.id}
-                          onChange={() => setSelectedEgg(egg.id)}
-                          className="hidden"
-                        />
-                        <div>
-                          <div className={`text-xs font-bold uppercase tracking-widest ${selectedEgg === egg.id ? 'text-brand-accent' : 'text-white'}`}>
-                            {egg.name}
+                    {loadingEggs ? (
+                      <div className="flex items-center gap-2 text-slate-500 font-mono text-[10px]">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        SYNCING ENVIRONMENTS...
+                      </div>
+                    ) : (
+                      eggs.map(egg => (
+                        <label 
+                          key={egg.id} 
+                          className={`flex items-center gap-4 p-4 cursor-pointer border transition-all duration-300 ${
+                            selectedEgg === egg.id 
+                              ? 'bg-brand-accent/5 border-brand-accent' 
+                              : 'bg-brand-darker border-brand-border hover:border-slate-700'
+                          }`}
+                        >
+                          <div className={`w-4 h-4 border flex items-center justify-center transition-colors ${selectedEgg === egg.id ? 'border-brand-accent bg-brand-accent' : 'border-slate-700'}`}>
+                            {selectedEgg === egg.id && <CheckCircle2 className="w-3 h-3 text-brand-darker" />}
                           </div>
-                          <div className="text-[10px] font-mono text-slate-500 uppercase mt-1">{egg.description}</div>
-                        </div>
-                      </label>
-                    ))}
+                          <input 
+                            type="radio" 
+                            name="eggType" 
+                            value={egg.id} 
+                            checked={selectedEgg === egg.id}
+                            onChange={() => setSelectedEgg(egg.id)}
+                            className="hidden"
+                          />
+                          <div>
+                            <div className={`text-xs font-bold uppercase tracking-widest ${selectedEgg === egg.id ? 'text-brand-accent' : 'text-white'}`}>
+                              {egg.name}
+                            </div>
+                            <div className="text-[10px] font-mono text-slate-500 uppercase mt-1">{egg.description}</div>
+                          </div>
+                        </label>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>

@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Server, Cpu, HardDrive, MemoryStick, Play, Square, RotateCcw, ExternalLink, Activity } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
-import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
 interface ServerData {
@@ -55,39 +53,37 @@ export default function UserDashboard() {
   useEffect(() => {
     if (!user) return;
 
-    const q = query(collection(db, 'servers'), where('userId', '==', user.uid));
-    
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      const serverList: ServerData[] = [];
-      snapshot.forEach((doc) => {
-        serverList.push({ id: doc.id, ...doc.data() } as ServerData);
-      });
-      setServers(serverList);
-      setFetching(false);
+    const fetchServers = async () => {
+      try {
+        const response = await fetch(`/api/user/servers?userId=${user.uid}`);
+        const serverList = await response.json();
+        setServers(serverList);
+        setFetching(false);
 
-      // Fetch real details from panel for each server
-      serverList.forEach(async (server) => {
-        if (server.panelId) {
-          try {
-            const res = await fetch(`/api/servers/${server.panelId}`);
-            if (res.ok) {
-              const data = await res.json();
-              setRealServerData(prev => ({ ...prev, [server.panelId!]: data }));
-            } else {
-              const errorText = await res.text();
-              console.error(`Failed to fetch real server data for ${server.panelId}: ${res.status} ${res.statusText}`, errorText);
+        // Fetch real details from panel for each server
+        serverList.forEach(async (server: any) => {
+          if (server.panelId) {
+            try {
+              const res = await fetch(`/api/servers/${server.panelId}`);
+              if (res.ok) {
+                const data = await res.json();
+                setRealServerData(prev => ({ ...prev, [server.panelId!]: data }));
+              }
+            } catch (err) {
+              console.error(`Failed to fetch real server data for ${server.panelId}:`, err);
             }
-          } catch (err) {
-            console.error(`Failed to fetch real server data for ${server.panelId}:`, err);
           }
-        }
-      });
-    }, (error) => {
-      console.error("Error fetching servers:", error);
-      setFetching(false);
-    });
+        });
+      } catch (error) {
+        console.error("Error fetching servers:", error);
+        setFetching(false);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchServers();
+    // Poll every 30 seconds for updates
+    const interval = setInterval(fetchServers, 30000);
+    return () => clearInterval(interval);
   }, [user]);
 
   if (loading || fetching) {
