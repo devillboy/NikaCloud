@@ -9,5 +9,5 @@ export const getApiBase = () => {
   }
   
   // Always use the production backend URL for any non-localhost environment
-  return 'https://ais-dev-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
+  return 'https://ais-pre-i2s6j473uusrp3lsvm4alv-781732712074.asia-southeast1.run.app';
 };
