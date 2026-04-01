@@ -130,7 +130,7 @@ export default function Billing() {
       : selectedPlan.price;
     
     let price = duration >= 12 
-      ? Math.floor(basePrice * duration * 0.8) 
+      ? Math.floor(basePrice * duration * 0.65) 
       : basePrice * duration;
 
     if (appliedCoupon) {
@@ -176,7 +176,7 @@ export default function Billing() {
         : selectedPlan.price;
       
       let totalPrice = duration >= 12 
-        ? Math.floor(basePrice * duration * 0.8) 
+        ? Math.floor(basePrice * duration * 0.65) 
         : basePrice * duration;
 
       // Apply Coupon
@@ -320,6 +320,48 @@ export default function Billing() {
                 )}
               </div>
 
+              {/* Duration Selection */}
+              {selectedPlan && (
+                <div className="mb-12">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold">Billing Cycle</h3>
+                    <div className="px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full text-orange-500 text-[10px] font-bold uppercase tracking-widest">
+                      35% Yearly Discount
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { label: '1 Month', value: 1 },
+                      { label: '3 Months', value: 3 },
+                      { label: '6 Months', value: 6 },
+                      { label: '1 Year', value: 12, badge: 'Save 35%' },
+                      { label: '2 Years', value: 24, badge: 'Save 35%' },
+                      { label: '3 Years', value: 36, badge: 'Save 35%' },
+                      { label: '4 Years', value: 48, badge: 'Save 35%' },
+                    ].map((d) => (
+                      <button
+                        key={d.value}
+                        onClick={() => setDuration(d.value)}
+                        className={`relative p-4 rounded-2xl border text-center transition-all ${
+                          duration === d.value
+                            ? 'bg-orange-500/10 border-orange-500'
+                            : 'bg-white/5 border-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        <div className={`text-sm font-bold ${duration === d.value ? 'text-white' : 'text-gray-400'}`}>
+                          {d.label}
+                        </div>
+                        {d.badge && (
+                          <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-orange-500 rounded text-[8px] font-bold text-white uppercase">
+                            {d.badge}
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Payment Method */}
               {selectedPlan && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -430,7 +472,14 @@ export default function Billing() {
                     <div className="space-y-3">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Billing Cycle</span>
-                        <span className="text-white">Monthly</span>
+                        <span className="text-white">
+                          {duration === 1 ? 'Monthly' : 
+                           duration === 12 ? '1 Year' : 
+                           duration === 24 ? '2 Years' : 
+                           duration === 36 ? '3 Years' : 
+                           duration === 48 ? '4 Years' : 
+                           `${duration} Months`}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Payment Method</span>
