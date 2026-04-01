@@ -437,12 +437,6 @@ async function startServer() {
     });
   });
 
-  // Catch-all for API routes to prevent falling through to SPA fallback
-  app.all("/api/*", (req, res) => {
-    console.warn(`API route not found: ${req.method} ${req.url}`);
-    res.status(404).json({ error: "API route not found" });
-  });
-
   // Admin Endpoints
   app.get('/api/admin/stats', async (req, res) => {
     try {
@@ -782,6 +776,12 @@ async function startServer() {
     } catch (error) {
       res.status(500).json({ error: 'Failed to send push announcement' });
     }
+  });
+
+  // Catch-all for API routes to prevent falling through to SPA fallback
+  app.all("/api/*", (req, res) => {
+    console.warn(`API route not found: ${req.method} ${req.url}`);
+    res.status(404).json({ error: "API route not found" });
   });
 
   // Vite middleware for development

@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           let role = 'user';
           let claimed = false;
-          if (currentUser.email === 'ghoshsima874@gmail.com') {
+          if (currentUser.email === 'ghoshsima874@gmail.com' || currentUser.email === 'ikraminxpro@gmail.com') {
             role = 'admin';
           }
 
@@ -61,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setHasClaimedFreeServer(claimed);
         } catch (error) {
           console.error("Error fetching user data:", error);
-          setIsAdmin(currentUser.email === 'ghoshsima874@gmail.com');
+          setIsAdmin(currentUser.email === 'ghoshsima874@gmail.com' || currentUser.email === 'ikraminxpro@gmail.com');
           setHasClaimedFreeServer(false);
         }
       } else {

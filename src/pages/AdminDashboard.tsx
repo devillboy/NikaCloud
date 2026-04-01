@@ -1,6 +1,6 @@
 import { AdminPayments } from './AdminPayments';
 import { motion } from 'motion/react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   Server, 
@@ -21,11 +21,17 @@ import {
   Trash2,
   Cpu,
   Globe,
-  Shield
+  Shield,
+  ShieldCheck,
+  Loader2,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { Link, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getApiBase } from '../lib/api';
+import { db } from '../firebase';
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 
 const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (open: boolean) => void }) => {
   const location = useLocation();
@@ -274,23 +280,61 @@ const Analytics = () => {
 const UserManagement = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adminEmail, setAdminEmail] = useState('');
+  const [isAssigningAdmin, setIsAssigningAdmin] = useState(false);
+  const [adminAssignMessage, setAdminAssignMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  const fetchUsers = async () => {
+    try {
+      const apiBase = getApiBase();
+      const response = await fetch(`${apiBase}/api/admin/users`);
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const apiBase = getApiBase();
-
-        const response = await fetch(`${apiBase}/api/admin/users`);
-        const data = await response.json();
-        setUsers(data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUsers();
   }, []);
+
+  const handleAssignAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminEmail.trim()) return;
+
+    setIsAssigningAdmin(true);
+    setAdminAssignMessage(null);
+
+    try {
+      // Find user by email
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', adminEmail.trim()));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        setAdminAssignMessage({ type: 'error', text: 'User not found with this email address.' });
+        return;
+      }
+
+      // Update user role to admin
+      const userDoc = querySnapshot.docs[0];
+      await updateDoc(doc(db, 'users', userDoc.id), {
+        role: 'admin'
+      });
+
+      setAdminAssignMessage({ type: 'success', text: `Successfully granted admin access to ${adminEmail}` });
+      setAdminEmail('');
+      fetchUsers(); // Refresh the users list
+    } catch (error: any) {
+      console.error('Error assigning admin:', error);
+      setAdminAssignMessage({ type: 'error', text: error.message || 'Failed to assign admin role. Please try again.' });
+    } finally {
+      setIsAssigningAdmin(false);
+    }
+  };
 
   const handleUserAction = async (id: string, action: string) => {
     if (action === 'delete' && !window.confirm('Are you sure you want to delete this user?')) return;
@@ -324,6 +368,54 @@ const UserManagement = () => {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white mb-2">User Management</h1>
         <p className="text-slate-400">Manage user accounts, permissions, and status.</p>
+      </div>
+
+      <div className="glass-panel p-6 rounded-xl mb-8">
+        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
+          <ShieldCheck className="w-5 h-5 text-brand-accent" />
+          Assign Admin Access
+        </h2>
+        <p className="text-slate-400 text-sm mb-4">
+          Grant administrator privileges to an existing user via their registered email address.
+        </p>
+        
+        <form onSubmit={handleAssignAdmin} className="flex gap-4">
+          <input 
+            type="email" 
+            placeholder="User's Email Address" 
+            value={adminEmail} 
+            onChange={(e) => setAdminEmail(e.target.value)} 
+            className="flex-1 p-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:border-brand-accent outline-none transition-all" 
+            required
+          />
+          <button 
+            type="submit"
+            disabled={isAssigningAdmin || !adminEmail.trim()}
+            className="bg-brand-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-brand-accent-bright transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {isAssigningAdmin ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Assigning...
+              </>
+            ) : (
+              'Grant Access'
+            )}
+          </button>
+        </form>
+
+        {adminAssignMessage && (
+          <div className={`mt-4 p-4 rounded-lg flex items-start gap-3 ${
+            adminAssignMessage.type === 'success' ? 'bg-green-500/10 border border-green-500/20 text-green-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'
+          }`}>
+            {adminAssignMessage.type === 'success' ? (
+              <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
+            ) : (
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+            )}
+            <p className="text-sm">{adminAssignMessage.text}</p>
+          </div>
+        )}
       </div>
 
       <div className="glass-panel rounded-xl overflow-hidden overflow-x-auto">
