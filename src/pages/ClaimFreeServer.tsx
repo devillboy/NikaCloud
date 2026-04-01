@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Server, CheckCircle2, Loader2, ArrowRight, Copy, ExternalLink, ShieldAlert, Terminal, Cpu, HardDrive, Zap } from 'lucide-react';
+import { Server, CheckCircle2, Loader2, ArrowRight, Copy, ExternalLink, ShieldAlert, Terminal, Cpu, HardDrive, Zap, Database } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, updateDoc, collection, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -49,6 +49,27 @@ export default function ClaimFreeServer() {
     }
   }, [user, hasClaimedFreeServer, loading, navigate, success, claiming]);
 
+  const [provisioningProgress, setProvisioningProgress] = useState(0);
+
+  useEffect(() => {
+    let interval: any;
+    if (claiming && claimStatus === 'provisioning') {
+      const startTime = Date.now();
+      const duration = 15000; // 15 seconds
+      
+      interval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min((elapsed / duration) * 100, 100);
+        setProvisioningProgress(progress);
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+        }
+      }, 50);
+    }
+    return () => clearInterval(interval);
+  }, [claiming, claimStatus]);
+
   const handleClaim = async () => {
     if (!user) return;
     if (!serverName.trim()) {
@@ -59,10 +80,11 @@ export default function ClaimFreeServer() {
     setClaiming(true);
     setClaimStatus('provisioning');
     setError(null);
+    setProvisioningProgress(0);
 
     try {
-      // Step 1: Provisioning
-      const response = await fetch('/api/servers/create-free', {
+      // Start the backend call immediately but wait for the animation to finish
+      const responsePromise = fetch('/api/servers/create-free', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -75,19 +97,23 @@ export default function ClaimFreeServer() {
         }),
       });
 
+      // Wait for at least 15 seconds for the animation
+      await new Promise(resolve => setTimeout(resolve, 15000));
+
+      const response = await responsePromise;
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || 'Infrastructure allocation failed.');
       }
 
-      // Step 2: Installing (Simulated brief delay for realism, but much shorter)
+      // Step 2: Installing
       setClaimStatus('installing');
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Step 3: Finalizing
       setClaimStatus('finalizing');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       // Mark as success and show credentials
       setCredentials(data.credentials);
@@ -111,6 +137,85 @@ export default function ClaimFreeServer() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const ProvisioningAnimation = () => {
+    const specs = [
+      { icon: Cpu, label: 'CPU CORE', value: '100%', color: 'text-orange-500' },
+      { icon: Database, label: 'RAM MEMORY', value: '5GB DDR4', color: 'text-blue-500' },
+      { icon: HardDrive, label: 'NVMe SSD', value: '10GB GEN4', color: 'text-purple-500' },
+      { icon: Zap, label: 'NETWORK', value: '1Gbps', color: 'text-yellow-500' },
+    ];
+
+    return (
+      <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center p-6 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.15)_0%,transparent_70%)]" />
+        
+        <div className="max-w-4xl w-full relative">
+          <div className="text-center mb-16">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="inline-block px-4 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-bold tracking-[0.3em] mb-6"
+            >
+              PROVISIONING INFRASTRUCTURE
+            </motion.div>
+            <h2 className="text-5xl md:text-7xl font-bold text-white tracking-tighter mb-4 uppercase">
+              Allocating <span className="text-orange-500">Resources</span>
+            </h2>
+            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden max-w-md mx-auto">
+              <motion.div 
+                className="h-full bg-orange-500"
+                initial={{ width: 0 }}
+                animate={{ width: `${provisioningProgress}%` }}
+              />
+            </div>
+            <p className="mt-4 font-mono text-xs text-slate-500 uppercase tracking-widest">
+              Progress: {Math.round(provisioningProgress)}%
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {specs.map((spec, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 50, rotateX: 45 }}
+                animate={{ 
+                  opacity: provisioningProgress > (i * 20) ? 1 : 0, 
+                  y: provisioningProgress > (i * 20) ? 0 : 50,
+                  rotateX: 0
+                }}
+                transition={{ type: 'spring', damping: 12 }}
+                className="glass-panel p-8 rounded-3xl border border-white/10 flex flex-col items-center text-center group relative overflow-hidden"
+              >
+                <div className={`w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                  <spec.icon className={`w-8 h-8 ${spec.color}`} />
+                </div>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">{spec.label}</div>
+                <div className="text-2xl font-bold text-white">{spec.value}</div>
+                
+                {provisioningProgress > (i * 25 + 10) && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute top-4 right-4"
+                  >
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  </motion.div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="mt-20 font-mono text-[10px] text-slate-600 uppercase tracking-[0.4em] text-center space-y-2">
+            <p className={provisioningProgress > 10 ? 'text-orange-500' : ''}>[ SYSTEM ] Initializing virtualization layer...</p>
+            <p className={provisioningProgress > 30 ? 'text-orange-500' : ''}>[ NETWORK ] Binding to global edge nodes...</p>
+            <p className={provisioningProgress > 60 ? 'text-orange-500' : ''}>[ STORAGE ] Mounting NVMe partitions...</p>
+            <p className={provisioningProgress > 90 ? 'text-orange-500' : ''}>[ SECURITY ] Applying DDoS mitigation rules...</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-brand-darker flex items-center justify-center">
@@ -124,6 +229,7 @@ export default function ClaimFreeServer() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-brand-darker py-32">
+      {claiming && claimStatus === 'provisioning' && <ProvisioningAnimation />}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-10" />
       
       <div className="w-full max-w-4xl relative z-10">

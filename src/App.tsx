@@ -18,6 +18,8 @@ import About from './pages/About';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import ServerDetails from './pages/ServerDetails';
+import UserPlans from './pages/UserPlans';
+import BackupReminder from './components/BackupReminder';
 import { useFCM } from './hooks/useFCM';
 
 export default function App() {
@@ -27,6 +29,7 @@ export default function App() {
     <BrowserRouter>
       <div className="min-h-screen flex flex-col bg-brand-darker selection:bg-brand-accent/30 relative">
         <Navbar />
+        <BackupReminder />
         <main className="flex-grow flex flex-col">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -40,6 +43,7 @@ export default function App() {
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/server/:id" element={<ServerDetails />} />
+            <Route path="/plans" element={<UserPlans />} />
           </Routes>
         </main>
         <Footer />

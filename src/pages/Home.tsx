@@ -113,8 +113,8 @@ export default function Home() {
               className="flex flex-wrap gap-4"
             >
               <Link
-                to="/dashboard"
-                className="px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full font-semibold text-white hover:shadow-lg hover:shadow-orange-500/25 transition-all flex items-center gap-2 group"
+                to="/claim-free"
+                className="px-8 py-4 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full font-bold text-white hover:shadow-lg hover:shadow-orange-500/25 transition-all flex items-center gap-2 group"
               >
                 <Zap className="w-5 h-5 fill-current" />
                 Claim Free Server
@@ -122,12 +122,97 @@ export default function Home() {
               </Link>
               <a
                 href="#plans"
-                className="px-8 py-4 bg-white/5 border border-white/10 rounded-full font-semibold text-white hover:bg-white/10 transition-all"
+                className="px-8 py-4 bg-transparent border border-white/20 rounded-full font-bold text-white hover:bg-white/5 transition-all"
               >
                 Explore Plans
               </a>
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* Free Server Banner (Matching Image) */}
+      <section className="py-12 container mx-auto px-6">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-orange-900/40 to-black border border-orange-500/20 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8"
+        >
+          <div className="relative z-10 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 text-[10px] font-bold tracking-widest mb-6 border border-orange-500/30">
+              LIMITED TIME OFFER
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Get a Free Minecraft Server</h2>
+            <p className="text-gray-400 text-lg mb-8">
+              Start your community today with our powerful free tier. No credit card required. Instant automated setup.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium">
+                <Cpu className="w-4 h-4 text-orange-500" /> 100% CPU
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium">
+                <Database className="w-4 h-4 text-orange-500" /> 5GB RAM
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium">
+                <Server className="w-4 h-4 text-orange-500" /> 10GB NVMe
+              </div>
+            </div>
+          </div>
+          <Link 
+            to="/claim-free"
+            className="relative z-10 px-10 py-5 bg-white text-black rounded-2xl font-bold text-lg hover:bg-gray-100 transition-all flex items-center gap-2 shadow-2xl shadow-white/10"
+          >
+            Claim Now <ArrowRight className="w-5 h-5" />
+          </Link>
+          
+          {/* Background Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-orange-500/10 blur-[120px] pointer-events-none" />
+        </motion.div>
+      </section>
+
+      {/* Why Choose Section */}
+      <section className="py-24 container mx-auto px-6">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">Why Choose NikaCloud?</h2>
+          <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+            We provide an enterprise-grade ecosystem designed for ultimate performance, reliability, and scale.
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            { 
+              title: "Lightning Fast", 
+              desc: "Powered by the latest NVMe SSDs and high-clock CPUs for zero-lag performance.", 
+              icon: Zap 
+            },
+            { 
+              title: "DDoS Protection", 
+              desc: "Enterprise-grade mitigation to keep your servers online 24/7, automatically.", 
+              icon: Shield 
+            },
+            { 
+              title: "Global Network", 
+              desc: "Premium tier-1 blend network ensuring low latency across the globe.", 
+              icon: Globe 
+            }
+          ].map((feature, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="p-10 rounded-[2rem] bg-brand-card border border-white/5 hover:border-orange-500/30 transition-all group"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                <feature.icon className="w-7 h-7 text-orange-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">{feature.title}</h3>
+              <p className="text-gray-400 leading-relaxed">{feature.desc}</p>
+            </motion.div>
+          ))}
         </div>
       </section>
 

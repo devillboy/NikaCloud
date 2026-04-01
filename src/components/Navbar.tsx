@@ -17,6 +17,7 @@ export default function Navbar() {
     { name: 'Infrastructure', href: '/#features' },
     { name: 'Nodes', href: '/#plans' },
     { name: 'Billing', href: '/billing' },
+    { name: 'My Plans', href: '/plans', authOnly: true },
     { name: 'Discord', href: 'https://discord.gg/nikacloud', external: true },
   ];
 
@@ -33,17 +34,20 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-12">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                target={link.external ? "_blank" : undefined}
-                rel={link.external ? "noopener noreferrer" : undefined}
-                className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 hover:text-orange-500 transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              if (link.authOnly && !user) return null;
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  target={link.external ? "_blank" : undefined}
+                  rel={link.external ? "noopener noreferrer" : undefined}
+                  className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 hover:text-orange-500 transition-colors"
+                >
+                  {link.name}
+                </a>
+              );
+            })}
             
             {user ? (
               <div className="flex items-center gap-8">
@@ -95,16 +99,19 @@ export default function Navbar() {
             className="md:hidden bg-black border-b border-white/10 overflow-hidden"
           >
             <div className="px-6 pt-4 pb-12 space-y-6">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="block text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 hover:text-orange-500"
-                >
-                  {link.name}
-                </a>
-              ))}
+              {navLinks.map((link) => {
+                if (link.authOnly && !user) return null;
+                return (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className="block text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 hover:text-orange-500"
+                  >
+                    {link.name}
+                  </a>
+                );
+              })}
               <div className="pt-6 border-t border-white/10">
                 {user ? (
                   <div className="space-y-4">

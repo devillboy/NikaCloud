@@ -224,7 +224,7 @@ async function startServer() {
 
   // Payment Submission (Backend Setup)
   app.post("/api/payments", upload.single("screenshot"), async (req, res) => {
-    const { userId, userEmail, planId, planName, amount, duration, upiId, utrId, method, screenshot } = req.body;
+    const { userId, userEmail, planId, planName, amount, duration, upiId, utrId, method, screenshot, renewServerId } = req.body;
     
     // Simple Rate Limit: 1 request per 30 seconds per user
     const now = Date.now();
@@ -235,9 +235,6 @@ async function startServer() {
     paymentRateLimit.set(userId, now);
     
     try {
-      const expiryDate = new Date();
-      expiryDate.setMonth(expiryDate.getMonth() + parseInt(duration));
-
       // 1. Save payment record
       const paymentRef = await addDoc(collection(db, "payments"), {
         userId,
@@ -246,14 +243,18 @@ async function startServer() {
         planName,
         amount: parseInt(amount),
         duration: parseInt(duration),
-        expiryDate: expiryDate.toISOString(),
         upiId: upiId || 'N/A',
         utrId: utrId || 'N/A',
         method,
         screenshotUrl: screenshot || '',
         status: "Pending",
+        renewServerId: renewServerId || null,
         createdAt: serverTimestamp(),
       });
+
+      // ... AI Verification logic ...
+      // (Skipping for brevity in this replacement, assuming it stays the same)
+      // Actually, I should probably keep the AI logic. I'll use a larger block.
 
       // Notify user about payment submission
       // Email removed
@@ -329,8 +330,13 @@ async function startServer() {
       // Simulate Automation: Create server in Firestore
       const nodeNumber = Math.floor(Math.random() * 3) + 1; // Randomly pick Node 1, 2, or 3
       const serverIp = `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`;
+      
+      // Grace period: 7 days after expiry
+      const deleteDate = new Date(expiryDate);
+      deleteDate.setDate(deleteDate.getDate() + 7);
+
       const serverRef = await addDoc(collection(db, "servers"), {
-        name: `${planName} Node ${nodeNumber}`,
+        name: `${planName} Paid Node ${nodeNumber}`,
         type: planId.startsWith('mc') ? 'minecraft' : (planId.startsWith('bot') ? 'bot' : 'vps'),
         nodeType: 'Paid Node',
         nodeId: nodeNumber,
@@ -341,6 +347,7 @@ async function startServer() {
         isPaid: true,
         duration: parseInt(duration),
         expiresAt: expiryDate.toISOString(),
+        deleteAt: deleteDate.toISOString(), // Scheduled deletion date
         createdAt: serverTimestamp(),
       });
 
@@ -364,10 +371,14 @@ async function startServer() {
       // For now, we simulate the automation.
       const nodeNumber = Math.floor(Math.random() * 3) + 1; // Randomly pick Node 1, 2, or 3
       const expiryDate = new Date();
-      expiryDate.setMonth(expiryDate.getMonth() + 1); // 1 month expiry for free servers too
+      expiryDate.setMonth(expiryDate.getMonth() + 1); // 1 month expiry
+      
+      // Grace period: 7 days after expiry
+      const deleteDate = new Date(expiryDate);
+      deleteDate.setDate(deleteDate.getDate() + 7);
 
       const serverRef = await addDoc(collection(db, "servers"), {
-        name: `${serverName.trim()} (Node ${nodeNumber})`,
+        name: `${serverName.trim()} (Free Node ${nodeNumber})`,
         type: "Free Node",
         nodeType: 'Free Node',
         nodeId: nodeNumber,
@@ -377,6 +388,7 @@ async function startServer() {
         planId: 'free-tier',
         isPaid: false,
         expiresAt: expiryDate.toISOString(),
+        deleteAt: deleteDate.toISOString(), // Scheduled deletion date
         specs: {
           ram: '5GB',
           cpu: '100%',
@@ -527,6 +539,40 @@ async function startServer() {
       res.json(usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch users' });
+    }
+  });
+
+  app.post('/api/admin/plans', async (req, res) => {
+    try {
+      const plan = req.body;
+      const docRef = await addDoc(collection(db, 'plans'), {
+        ...plan,
+        createdAt: serverTimestamp()
+      });
+      res.json({ id: docRef.id, ...plan });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create plan' });
+    }
+  });
+
+  app.patch('/api/admin/plans/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      await updateDoc(doc(db, 'plans', id), updates);
+      res.json({ id, ...updates });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update plan' });
+    }
+  });
+
+  app.delete('/api/admin/plans/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      await deleteDoc(doc(db, 'plans', id));
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete plan' });
     }
   });
 

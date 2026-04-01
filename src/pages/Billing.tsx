@@ -56,6 +56,8 @@ export default function Billing() {
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [renewServerId, setRenewServerId] = useState<string | null>(null);
+  const [renewServer, setRenewServer] = useState<any>(null);
   
   // Coupon State
   const [couponCode, setCouponCode] = useState("");
@@ -82,7 +84,22 @@ export default function Billing() {
         // Pre-select plan from URL
         const params = new URLSearchParams(window.location.search);
         const planId = params.get('plan');
-        if (planId) {
+        const renewId = params.get('renew');
+
+        if (renewId) {
+          setRenewServerId(renewId);
+          // Fetch server details to pre-select plan
+          const serverRes = await fetch(`/api/servers/${renewId}`);
+          if (serverRes.ok) {
+            const serverData = await serverRes.json();
+            setRenewServer(serverData);
+            const plan = data.find((p: any) => p.id === serverData.planId);
+            if (plan) {
+              setSelectedPlan(plan);
+              setSelectedCategory(plan.type);
+            }
+          }
+        } else if (planId) {
           const plan = data.find((p: any) => p.id === planId);
           if (plan) {
             setSelectedPlan(plan);
@@ -207,6 +224,7 @@ export default function Billing() {
           utrId: utrId || 'N/A',
           method: paymentMethod,
           screenshot: screenshot || '',
+          renewServerId: renewServerId || undefined,
         }),
       });
 
@@ -240,8 +258,15 @@ export default function Billing() {
             {/* Left Column: Selection */}
             <div className="flex-1">
               <div className="mb-10">
-                <h1 className="text-4xl font-bold mb-4">Configure Your <span className="text-orange-500">Node</span></h1>
-                <p className="text-gray-400">Select your service category and plan to begin deployment.</p>
+                <h1 className="text-4xl font-bold mb-4">
+                  {renewServerId ? 'Renew Your ' : 'Configure Your '}
+                  <span className="text-orange-500">Node</span>
+                </h1>
+                <p className="text-gray-400">
+                  {renewServerId 
+                    ? `Renewing: ${renewServer?.name || 'Loading...'}` 
+                    : 'Select your service category and plan to begin deployment.'}
+                </p>
               </div>
 
               {/* Security & Automation Info */}

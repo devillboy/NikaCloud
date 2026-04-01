@@ -292,6 +292,33 @@ const UserManagement = () => {
     fetchUsers();
   }, []);
 
+  const handleUserAction = async (id: string, action: string) => {
+    if (action === 'delete' && !window.confirm('Are you sure you want to delete this user?')) return;
+    
+    try {
+      const apiBase = getApiBase();
+      const response = await fetch(`${apiBase}/api/admin/users/${id}`, {
+        method: action === 'delete' ? 'DELETE' : 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: action === 'suspend' ? JSON.stringify({ role: 'suspended' }) : undefined
+      });
+      
+      if (response.ok) {
+        if (action === 'delete') {
+          setUsers(users.filter(u => u.id !== id));
+        } else {
+          setUsers(users.map(u => u.id === id ? { ...u, role: 'suspended' } : u));
+        }
+        alert(`User ${action}ed successfully`);
+      } else {
+        throw new Error(`Failed to ${action} user`);
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing user:`, error);
+      alert(`Failed to ${action} user`);
+    }
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
       <div className="mb-8">
@@ -316,10 +343,25 @@ const UserManagement = () => {
               <tr key={user.id} className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors">
                 <td className="p-4 text-white font-medium">{user.displayName || 'N/A'}</td>
                 <td className="p-4 text-slate-300">{user.email}</td>
-                <td className="p-4 text-slate-300">{user.role || 'User'}</td>
-                <td className="p-4 text-right">
-                  <button className="text-slate-400 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-red-400/10">
+                <td className="p-4 text-slate-300">
+                  <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${user.role === 'admin' ? 'bg-brand-accent/20 text-brand-accent' : user.role === 'suspended' ? 'bg-red-500/20 text-red-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                    {user.role || 'User'}
+                  </span>
+                </td>
+                <td className="p-4 text-right space-x-2">
+                  <button 
+                    onClick={() => handleUserAction(user.id, 'suspend')}
+                    disabled={user.role === 'suspended' || user.role === 'admin'}
+                    className="text-slate-400 hover:text-orange-400 transition-colors p-2 rounded-lg hover:bg-orange-400/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     Suspend
+                  </button>
+                  <button 
+                    onClick={() => handleUserAction(user.id, 'delete')}
+                    disabled={user.role === 'admin'}
+                    className="text-slate-400 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-red-400/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </td>
               </tr>
@@ -425,21 +467,58 @@ const ServerManagement = () => {
 const PlanManagement = () => {
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<any>(null);
+  const [newPlan, setNewPlan] = useState({ name: '', price: '', ram: '', cpu: '', ssd: '', type: 'minecraft' });
+
+  const fetchPlans = async () => {
+    try {
+      const res = await fetch('/api/plans');
+      const data = await res.json();
+      setPlans(data);
+    } catch (err) {
+      console.error("Error fetching plans:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const res = await fetch('/api/plans');
-        const data = await res.json();
-        setPlans(data);
-      } catch (err) {
-        console.error("Error fetching plans:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchPlans();
   }, []);
+
+  const handleSavePlan = async () => {
+    try {
+      const method = editingPlan ? 'PATCH' : 'POST';
+      const url = editingPlan ? `/api/admin/plans/${editingPlan.id}` : '/api/admin/plans';
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPlan)
+      });
+      
+      if (response.ok) {
+        fetchPlans();
+        setShowModal(false);
+        setEditingPlan(null);
+        setNewPlan({ name: '', price: '', ram: '', cpu: '', ssd: '', type: 'minecraft' });
+      }
+    } catch (error) {
+      console.error("Error saving plan:", error);
+    }
+  };
+
+  const handleDeletePlan = async (id: string) => {
+    if (window.confirm('Delete this plan?')) {
+      try {
+        await fetch(`/api/admin/plans/${id}`, { method: 'DELETE' });
+        fetchPlans();
+      } catch (error) {
+        console.error("Error deleting plan:", error);
+      }
+    }
+  };
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -448,7 +527,14 @@ const PlanManagement = () => {
           <h1 className="text-2xl font-bold text-white mb-2">Plan Management</h1>
           <p className="text-slate-400">Adjust pricing, resources, and availability of your hosting plans.</p>
         </div>
-        <button className="bg-brand-accent hover:bg-brand-accent-bright text-white px-4 py-2 rounded-xl font-medium transition-colors flex items-center gap-2">
+        <button 
+          onClick={() => {
+            setEditingPlan(null);
+            setNewPlan({ name: '', price: '', ram: '', cpu: '', ssd: '', type: 'minecraft' });
+            setShowModal(true);
+          }}
+          className="bg-brand-accent hover:bg-brand-accent-bright text-white px-4 py-2 rounded-xl font-medium transition-colors flex items-center gap-2"
+        >
           <Plus className="w-5 h-5" />
           Create New Plan
         </button>
@@ -462,13 +548,12 @@ const PlanManagement = () => {
               <th className="p-4 text-sm font-medium text-slate-400">Type</th>
               <th className="p-4 text-sm font-medium text-slate-400">Price</th>
               <th className="p-4 text-sm font-medium text-slate-400">RAM</th>
-              <th className="p-4 text-sm font-medium text-slate-400">Status</th>
               <th className="p-4 text-sm font-medium text-slate-400 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="p-4 text-center text-slate-400">Loading plans...</td></tr>
+              <tr><td colSpan={5} className="p-4 text-center text-slate-400">Loading plans...</td></tr>
             ) : plans.map(plan => (
               <tr key={plan.id} className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors">
                 <td className="p-4 text-white font-medium flex items-center gap-3">
@@ -482,14 +567,19 @@ const PlanManagement = () => {
                 </td>
                 <td className="p-4 text-slate-300">₹{plan.price}</td>
                 <td className="p-4 text-slate-300">{plan.ram}</td>
-                <td className="p-4">
-                  <span className="px-2 py-1 rounded text-[10px] font-bold uppercase bg-brand-accent/10 text-brand-accent">
-                    Active
-                  </span>
-                </td>
-                <td className="p-4 text-right">
-                  <button className="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800">
+                <td className="p-4 text-right space-x-2">
+                  <button 
+                    onClick={() => {
+                      setEditingPlan(plan);
+                      setNewPlan({ name: plan.name, price: plan.price, ram: plan.ram, cpu: plan.cpu, ssd: plan.ssd, type: plan.type });
+                      setShowModal(true);
+                    }}
+                    className="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
+                  >
                     <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleDeletePlan(plan.id)} className="text-red-400 hover:text-red-300 p-2">
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </td>
               </tr>
@@ -497,6 +587,86 @@ const PlanManagement = () => {
           </tbody>
         </table>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-brand-card border border-slate-800 p-8 rounded-2xl w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-6">{editingPlan ? 'Edit Plan' : 'Create New Plan'}</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs text-slate-500 uppercase mb-2">Plan Name</label>
+                <input 
+                  type="text" 
+                  value={newPlan.name} 
+                  onChange={e => setNewPlan({...newPlan, name: e.target.value})}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white"
+                  placeholder="Iron Plan"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-slate-500 uppercase mb-2">Price (₹)</label>
+                  <input 
+                    type="text" 
+                    value={newPlan.price} 
+                    onChange={e => setNewPlan({...newPlan, price: e.target.value})}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white"
+                    placeholder="199"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 uppercase mb-2">Type</label>
+                  <select 
+                    value={newPlan.type} 
+                    onChange={e => setNewPlan({...newPlan, type: e.target.value})}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white"
+                  >
+                    <option value="minecraft">Minecraft</option>
+                    <option value="bot">Bot Hosting</option>
+                    <option value="vps">VPS</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs text-slate-500 uppercase mb-2">RAM</label>
+                  <input 
+                    type="text" 
+                    value={newPlan.ram} 
+                    onChange={e => setNewPlan({...newPlan, ram: e.target.value})}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white"
+                    placeholder="4GB"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 uppercase mb-2">CPU</label>
+                  <input 
+                    type="text" 
+                    value={newPlan.cpu} 
+                    onChange={e => setNewPlan({...newPlan, cpu: e.target.value})}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white"
+                    placeholder="100%"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 uppercase mb-2">SSD</label>
+                  <input 
+                    type="text" 
+                    value={newPlan.ssd} 
+                    onChange={e => setNewPlan({...newPlan, ssd: e.target.value})}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white"
+                    placeholder="10GB"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-4 mt-8">
+                <button onClick={() => setShowModal(false)} className="flex-1 bg-slate-800 text-white p-3 rounded-xl">Cancel</button>
+                <button onClick={handleSavePlan} className="flex-1 bg-brand-accent text-white p-3 rounded-xl">{editingPlan ? 'Update' : 'Create'}</button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
