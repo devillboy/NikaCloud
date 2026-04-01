@@ -12,8 +12,12 @@ const UserPlans = () => {
     const fetchUserServers = async () => {
       if (!user) return;
       try {
-        const res = await fetch(`/api/servers?userId=${user.uid}`);
+        const res = await fetch(`/api/user/servers?userId=${user.uid}`);
         const data = await res.json();
+        if (!Array.isArray(data)) {
+          console.error("Expected array of servers, got:", data);
+          return;
+        }
         setServers(data);
       } catch (err) {
         console.error("Error fetching user servers:", err);
@@ -25,8 +29,9 @@ const UserPlans = () => {
   }, [user]);
 
   const getDaysRemaining = (expiryDate: string) => {
+    if (!expiryDate) return 0;
     const diff = new Date(expiryDate).getTime() - new Date().getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return isNaN(diff) ? 0 : Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
   return (
@@ -89,11 +94,11 @@ const UserPlans = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-400 flex items-center gap-2"><Shield className="w-4 h-4" /> Node Type</span>
-                      <span className="text-white font-medium">{server.nodeType}</span>
+                      <span className="text-white font-medium">{server.nodeType || 'Standard'}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-400 flex items-center gap-2"><Zap className="w-4 h-4" /> Resources</span>
-                      <span className="text-white font-medium">{server.specs?.ram} RAM</span>
+                      <span className="text-white font-medium">{server.specs?.ram || 'N/A'} RAM</span>
                     </div>
                   </div>
 

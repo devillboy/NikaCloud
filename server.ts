@@ -152,9 +152,9 @@ async function startServer() {
   const EGGS = [
     { id: 1, name: 'Vanilla Minecraft', description: 'Standard Minecraft server' },
     { id: 2, name: 'Paper', description: 'High performance, plugin support' },
-    { id: 4, name: 'Forge', description: 'Modded Minecraft support' },
-    { id: 15, name: 'Node.js', description: 'Host Discord bots & web apps' },
-    { id: 16, name: 'Python', description: 'Host Python scripts & bots' }
+    { id: 3, name: 'Forge', description: 'Modded Minecraft support' },
+    { id: 4, name: 'Velocity', description: 'Next-generation Minecraft proxy' },
+    { id: 5, name: 'BungeeCord', description: 'Reliable Minecraft proxy' }
   ];
 
   // API Routes

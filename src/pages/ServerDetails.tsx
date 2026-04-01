@@ -41,6 +41,11 @@ export default function ServerDetails() {
       try {
         const response = await fetch(`/api/user/servers?userId=${user.uid}`);
         const serverList = await response.json();
+        if (!Array.isArray(serverList)) {
+          console.error("Expected array of servers, got:", serverList);
+          setFetching(false);
+          return;
+        }
         const found = serverList.find((s: any) => s.id === id);
         setServer(found || null);
         setFetching(false);
@@ -73,7 +78,7 @@ export default function ServerDetails() {
   const getDaysRemaining = (dateString?: string) => {
     if (!dateString) return 0;
     const diff = new Date(dateString).getTime() - new Date().getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return isNaN(diff) ? 0 : Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
   if (loading || fetching) {

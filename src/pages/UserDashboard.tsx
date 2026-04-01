@@ -42,7 +42,7 @@ export default function UserDashboard() {
   const getDaysRemaining = (dateString?: string) => {
     if (!dateString) return 0;
     const diff = new Date(dateString).getTime() - new Date().getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return isNaN(diff) ? 0 : Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
   useEffect(() => {
@@ -58,6 +58,13 @@ export default function UserDashboard() {
       try {
         const response = await fetch(`/api/user/servers?userId=${user.uid}`);
         const serverList = await response.json();
+        
+        if (!Array.isArray(serverList)) {
+          console.error("Expected array of servers, got:", serverList);
+          setFetching(false);
+          return;
+        }
+
         setServers(serverList);
         setFetching(false);
 
@@ -184,16 +191,16 @@ export default function UserDashboard() {
             <Server className="w-16 h-16 text-slate-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No servers found</h3>
             <p className="text-slate-400 mb-6">You don't have any active servers yet.</p>
-            {servers.length < 2 ? (
+            {!hasClaimedFreeServer ? (
               <button 
-                onClick={() => navigate('/claim-free-server')}
+                onClick={() => navigate('/claim-free')}
                 className="px-6 py-3 bg-brand-accent hover:bg-brand-accent-bright text-white rounded-xl font-medium transition-colors"
               >
                 Claim Free Server
               </button>
             ) : (
               <div className="inline-block px-6 py-3 bg-slate-800 text-slate-400 rounded-xl font-medium border border-slate-700">
-                You have already claimed your maximum of 2 free servers.
+                You have already claimed your free server.
               </div>
             )}
           </motion.div>

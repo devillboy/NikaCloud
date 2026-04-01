@@ -13,6 +13,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -101,8 +102,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const refreshUserData = async () => {
+    if (user) {
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          setHasClaimedFreeServer(data.hasClaimedFreeServer || false);
+          setIsAdmin(data.role === 'admin');
+        }
+      } catch (error) {
+        console.error("Error refreshing user data:", error);
+      }
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAdmin, isNewUser, hasClaimedFreeServer, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout }}>
+    <AuthContext.Provider value={{ user, isAdmin, isNewUser, hasClaimedFreeServer, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );

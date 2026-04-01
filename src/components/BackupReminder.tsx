@@ -12,8 +12,12 @@ const BackupReminder = () => {
     const checkServers = async () => {
       if (!user) return;
       try {
-        const res = await fetch(`/api/servers?userId=${user.uid}`);
+        const res = await fetch(`/api/user/servers?userId=${user.uid}`);
         const data = await res.json();
+        if (!Array.isArray(data)) {
+          console.error("Expected array of servers, got:", data);
+          return;
+        }
         const expiring = data.filter((s: any) => {
           const daysLeft = Math.ceil((new Date(s.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
           return daysLeft <= 7;

@@ -4,6 +4,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Discord } from '../components/Icons';
 import { getApiBase } from '../lib/api';
+import { useAuth } from '../contexts/AuthContext';
 
 // Hardcoded plan data
 const BOT_PLANS = [
@@ -37,6 +38,7 @@ const FEATURES = [
 ];
 
 export default function Home() {
+  const { hasClaimedFreeServer } = useAuth();
   const [loading, setLoading] = React.useState(true);
   const [showAllPlans, setShowAllPlans] = React.useState(false);
 
@@ -113,11 +115,11 @@ export default function Home() {
               className="flex flex-wrap gap-4"
             >
               <Link
-                to="/claim-free"
+                to={hasClaimedFreeServer ? "/dashboard" : "/claim-free"}
                 className="px-8 py-4 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full font-bold text-white hover:shadow-lg hover:shadow-orange-500/25 transition-all flex items-center gap-2 group"
               >
                 <Zap className="w-5 h-5 fill-current" />
-                Claim Free Server
+                {hasClaimedFreeServer ? "Manage Servers" : "Claim Free Server"}
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
@@ -317,9 +319,18 @@ export default function Home() {
                     <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> {plan.ram} RAM</div>
                     <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> {plan.storage} NVMe</div>
                   </div>
-                  <Link to="/billing" className="block w-full py-5 rounded-2xl bg-white/10 text-center font-bold hover:bg-orange-500 hover:text-white transition-all">Get Started</Link>
+                  <a href="https://discord.gg/your-discord-invite" target="_blank" rel="noopener noreferrer" className="block w-full py-5 rounded-2xl bg-white/10 text-center font-bold hover:bg-[#5865F2] hover:text-white transition-all flex items-center justify-center gap-2">
+                    <Discord className="w-5 h-5 fill-current" />
+                    Buy via Discord
+                  </a>
                 </motion.div>
               ))}
+            </div>
+            <div className="mt-8 text-center text-gray-400 text-sm max-w-2xl mx-auto">
+              <p className="bg-white/5 border border-white/10 p-4 rounded-xl">
+                <strong className="text-white block mb-2">How to buy a VPS:</strong>
+                VPS plans are currently handled manually to ensure the best performance and setup for your specific needs. Please join our Discord server and open a ticket to purchase a VPS.
+              </p>
             </div>
           </div>
 

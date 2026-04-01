@@ -7,7 +7,7 @@ import { doc, updateDoc, collection, setDoc, serverTimestamp } from 'firebase/fi
 import { db } from '../firebase';
 
 export default function ClaimFreeServer() {
-  const { user, hasClaimedFreeServer, loading } = useAuth();
+  const { user, hasClaimedFreeServer, loading, refreshUserData } = useAuth();
   const navigate = useNavigate();
   const [claiming, setClaiming] = useState(false);
   const [claimStatus, setClaimStatus] = useState<'idle' | 'provisioning' | 'installing' | 'finalizing'>('idle');
@@ -16,9 +16,9 @@ export default function ClaimFreeServer() {
   const [eggs, setEggs] = useState<any[]>([
     { id: 1, name: 'Vanilla Minecraft', description: 'Standard Minecraft server' },
     { id: 2, name: 'Paper', description: 'High performance, plugin support' },
-    { id: 4, name: 'Forge', description: 'Modded Minecraft support' },
-    { id: 15, name: 'Node.js', description: 'Host Discord bots & web apps' },
-    { id: 16, name: 'Python', description: 'Host Python scripts & bots' }
+    { id: 3, name: 'Forge', description: 'Modded Minecraft support' },
+    { id: 4, name: 'Velocity', description: 'Next-generation Minecraft proxy' },
+    { id: 5, name: 'BungeeCord', description: 'Reliable Minecraft proxy' }
   ]);
   const [loadingEggs, setLoadingEggs] = useState(false);
   const [selectedEgg, setSelectedEgg] = useState<number | null>(2); // Default to Paper
@@ -29,12 +29,10 @@ export default function ClaimFreeServer() {
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login');
-    } else if (!loading && user && hasClaimedFreeServer && !success && !claiming) {
-      navigate('/dashboard');
     } else if (user && !serverName) {
       setServerName(`${user.displayName || user.email?.split('@')[0]}'s Node`);
     }
-  }, [user, hasClaimedFreeServer, loading, navigate, success, claiming]);
+  }, [user, loading, navigate, serverName]);
 
   const [provisioningProgress, setProvisioningProgress] = useState(0);
 
@@ -107,6 +105,9 @@ export default function ClaimFreeServer() {
       setSuccess(true);
       setClaiming(false);
       setClaimStatus('idle');
+      
+      // Refresh user data so the app knows they claimed the server
+      await refreshUserData();
       
     } catch (err) {
       console.error("Error claiming server:", err);
@@ -209,6 +210,35 @@ export default function ClaimFreeServer() {
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 text-brand-accent animate-spin" />
           <p className="font-mono text-[10px] uppercase tracking-widest text-slate-400">Initializing Terminal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasClaimedFreeServer && !success && !claiming) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-brand-darker py-32">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-10" />
+        <div className="w-full max-w-2xl relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-brand-dark border border-brand-border p-8 md:p-12 text-center"
+          >
+            <div className="w-20 h-20 bg-brand-accent/20 flex items-center justify-center mx-auto mb-8 border border-brand-accent/30 rounded-full">
+              <CheckCircle2 className="w-10 h-10 text-brand-accent" />
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-4 uppercase tracking-tighter">Node Already Claimed</h2>
+            <p className="text-slate-400 mb-8 font-mono text-sm">
+              You have already claimed your complimentary high-performance compute node. You can manage your server from the terminal.
+            </p>
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="bg-brand-accent text-brand-darker font-mono font-bold py-4 px-8 uppercase tracking-widest text-[10px] hover:bg-white transition-all inline-flex items-center justify-center gap-2"
+            >
+              Open Terminal <ArrowRight className="w-3 h-3" />
+            </button>
+          </motion.div>
         </div>
       </div>
     );

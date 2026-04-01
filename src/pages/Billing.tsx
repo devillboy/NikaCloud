@@ -346,7 +346,7 @@ export default function Billing() {
               </div>
 
               {/* Duration Selection */}
-              {selectedPlan && (
+              {selectedPlan && selectedCategory !== 'vps' && (
                 <div className="mb-12">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-bold">Billing Cycle</h3>
@@ -388,7 +388,7 @@ export default function Billing() {
               )}
 
               {/* Payment Method */}
-              {selectedPlan && (
+              {selectedPlan && selectedCategory !== 'vps' && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                   <h3 className="text-xl font-bold mb-6">Payment Method</h3>
                   <div className="grid grid-cols-3 gap-4 mb-12">
@@ -495,50 +495,56 @@ export default function Billing() {
                     </div>
                     
                     <div className="space-y-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Billing Cycle</span>
-                        <span className="text-white">
-                          {duration === 1 ? 'Monthly' : 
-                           duration === 12 ? '1 Year' : 
-                           duration === 24 ? '2 Years' : 
-                           duration === 36 ? '3 Years' : 
-                           duration === 48 ? '4 Years' : 
-                           `${duration} Months`}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Payment Method</span>
-                        <span className="text-white uppercase">{paymentMethod}</span>
-                      </div>
+                      {selectedCategory !== 'vps' && (
+                        <>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Billing Cycle</span>
+                            <span className="text-white">
+                              {duration === 1 ? 'Monthly' : 
+                               duration === 12 ? '1 Year' : 
+                               duration === 24 ? '2 Years' : 
+                               duration === 36 ? '3 Years' : 
+                               duration === 48 ? '4 Years' : 
+                               `${duration} Months`}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Payment Method</span>
+                            <span className="text-white uppercase">{paymentMethod}</span>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     {/* Coupon Input */}
-                    <div className="space-y-3 pt-4 border-t border-white/10">
-                      <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Promo Code</div>
-                      <div className="flex gap-2">
-                        <input 
-                          type="text" 
-                          placeholder="Enter code" 
-                          value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value)}
-                          className="flex-1 bg-black border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-orange-500 outline-none transition-all"
-                        />
-                        <button 
-                          onClick={handleApplyCoupon}
-                          disabled={validatingCoupon || !couponCode.trim()}
-                          className="bg-white text-black px-4 py-2 rounded-xl text-xs font-bold hover:bg-orange-500 hover:text-white transition-all disabled:opacity-50"
-                        >
-                          {validatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
-                        </button>
-                      </div>
-                      {couponError && <p className="text-red-500 text-[10px] font-bold">{couponError}</p>}
-                      {appliedCoupon && (
-                        <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 p-2 rounded-xl">
-                          <span className="text-green-400 text-[10px] font-bold uppercase">{appliedCoupon.code} Applied!</span>
-                          <button onClick={() => setAppliedCoupon(null)} className="text-green-400 hover:text-white text-xs">✕</button>
+                    {selectedCategory !== 'vps' && (
+                      <div className="space-y-3 pt-4 border-t border-white/10">
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Promo Code</div>
+                        <div className="flex gap-2">
+                          <input 
+                            type="text" 
+                            placeholder="Enter code" 
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value)}
+                            className="flex-1 bg-black border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-orange-500 outline-none transition-all"
+                          />
+                          <button 
+                            onClick={handleApplyCoupon}
+                            disabled={validatingCoupon || !couponCode.trim()}
+                            className="bg-white text-black px-4 py-2 rounded-xl text-xs font-bold hover:bg-orange-500 hover:text-white transition-all disabled:opacity-50"
+                          >
+                            {validatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                          </button>
                         </div>
-                      )}
-                    </div>
+                        {couponError && <p className="text-red-500 text-[10px] font-bold">{couponError}</p>}
+                        {appliedCoupon && (
+                          <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 p-2 rounded-xl">
+                            <span className="text-green-400 text-[10px] font-bold uppercase">{appliedCoupon.code} Applied!</span>
+                            <button onClick={() => setAppliedCoupon(null)} className="text-green-400 hover:text-white text-xs">✕</button>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="pt-6 border-t border-white/10">
                       {appliedCoupon && (
@@ -552,20 +558,32 @@ export default function Billing() {
                         <span className="text-3xl font-bold text-orange-500">₹{calculateDiscountedPrice()}</span>
                       </div>
                       
-                      <button
-                        onClick={handlePaymentSubmitted}
-                        disabled={verifying || (paymentMethod === 'upi' && !screenshot)}
-                        className="w-full py-5 bg-orange-500 rounded-2xl font-bold text-lg hover:bg-orange-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {verifying ? (
-                          <Loader2 className="w-6 h-6 animate-spin" />
-                        ) : (
-                          <>
-                            Complete Order
-                            <ArrowRight className="w-5 h-5" />
-                          </>
-                        )}
-                      </button>
+                      {selectedCategory === 'vps' ? (
+                        <a
+                          href="https://discord.gg/your-discord-invite"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-5 bg-[#5865F2] rounded-2xl font-bold text-lg hover:bg-[#4752C4] transition-all flex items-center justify-center gap-3 shadow-lg shadow-[#5865F2]/20"
+                        >
+                          <Discord className="w-6 h-6 fill-current" />
+                          Buy via Discord
+                        </a>
+                      ) : (
+                        <button
+                          onClick={handlePaymentSubmitted}
+                          disabled={verifying || (paymentMethod === 'upi' && !screenshot)}
+                          className="w-full py-5 bg-orange-500 rounded-2xl font-bold text-lg hover:bg-orange-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {verifying ? (
+                            <Loader2 className="w-6 h-6 animate-spin" />
+                          ) : (
+                            <>
+                              Complete Order
+                              <ArrowRight className="w-5 h-5" />
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : (
