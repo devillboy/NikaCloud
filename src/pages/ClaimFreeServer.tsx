@@ -61,10 +61,7 @@ export default function ClaimFreeServer() {
     setError(null);
 
     try {
-      // Simulate steps
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setClaimStatus('installing');
-      
+      // Step 1: Provisioning
       const response = await fetch('/api/servers/create-free', {
         method: 'POST',
         headers: {
@@ -84,11 +81,15 @@ export default function ClaimFreeServer() {
         throw new Error(data.error || 'Infrastructure allocation failed.');
       }
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Step 2: Installing (Simulated brief delay for realism, but much shorter)
+      setClaimStatus('installing');
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Step 3: Finalizing
       setClaimStatus('finalizing');
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Mark as success and show credentials
-      await new Promise(resolve => setTimeout(resolve, 1000));
       setCredentials(data.credentials);
       setSuccess(true);
       setClaiming(false);

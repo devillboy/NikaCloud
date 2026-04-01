@@ -260,46 +260,60 @@ async function startServer() {
 
       // 2. AI Verification (only for UPI)
       if (method === 'upi' && screenshot) {
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-        const response = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
-          contents: [
-            {
-              inlineData: {
-                mimeType: "image/png",
-                data: screenshot.split(',')[1] || screenshot,
+        console.log(`[${new Date().toISOString()}] AI Verification starting for payment ${paymentRef.id}`);
+        try {
+          const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+          
+          // Ensure we have clean base64 data
+          const base64Data = screenshot.includes(',') ? screenshot.split(',')[1] : screenshot;
+          
+          const response = await ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: [
+              {
+                inlineData: {
+                  mimeType: "image/png",
+                  data: base64Data,
+                },
               },
-            },
-            {
-              text: `CRITICAL SECURITY AUDIT: Analyze this UPI payment screenshot for NikaCloud.
-              Expected Payment Details:
-              - Amount: ₹${amount}
-              - Recipient: nikacloud@nyes (or similar variations)
-              - UTR ID: ${utrId}
-              
-              INSTRUCTIONS:
-              1. Verify if the amount in the screenshot matches ₹${amount}.
-              2. Verify if the UTR/Transaction ID in the screenshot matches ${utrId}.
-              3. Check for signs of digital manipulation (Photoshop, fake fonts, mismatched alignments).
-              4. Confirm the payment status is 'Success' or 'Completed'.
-              
-              Return EXACTLY one word: 'Genuine' if all checks pass perfectly, or 'Fake' if there is ANY discrepancy or sign of fraud.`,
-            },
-          ],
-        });
-
-        const result = response.text?.trim();
-        if (result !== "Genuine") {
-          await updateDoc(doc(db, "payments", paymentRef.id), {
-            status: "Rejected",
-            reason: "AI detected potential fraud.",
-            verifiedAt: serverTimestamp(),
+              {
+                text: `CRITICAL SECURITY AUDIT: Analyze this UPI payment screenshot for NikaCloud.
+                Expected Payment Details:
+                - Amount: ₹${amount}
+                - Recipient: nikacloud@nyes (or similar variations)
+                - UTR ID: ${utrId}
+                
+                INSTRUCTIONS:
+                1. Verify if the amount in the screenshot matches ₹${amount}.
+                2. Verify if the UTR/Transaction ID in the screenshot matches ${utrId}.
+                3. Check for signs of digital manipulation (Photoshop, fake fonts, mismatched alignments).
+                4. Confirm the payment status is 'Success' or 'Completed'.
+                
+                Return EXACTLY one word: 'Genuine' if all checks pass perfectly, or 'Fake' if there is ANY discrepancy or sign of fraud.`,
+              },
+            ],
           });
 
-          // Notify user about payment rejection
-          // Email removed
+          const result = response.text?.trim();
+          console.log(`[${new Date().toISOString()}] AI Verification result for ${paymentRef.id}: ${result}`);
+          
+          if (result !== "Genuine") {
+            await updateDoc(doc(db, "payments", paymentRef.id), {
+              status: "Rejected",
+              reason: "AI detected potential fraud or data mismatch.",
+              verifiedAt: serverTimestamp(),
+            });
 
-          return res.json({ status: "rejected", reason: "AI detected potential fraud." });
+            return res.json({ status: "rejected", reason: "AI detected potential fraud or data mismatch." });
+          }
+        } catch (aiError) {
+          console.error(`[${new Date().toISOString()}] AI Verification failed for ${paymentRef.id}:`, aiError);
+          // If AI fails, we don't necessarily reject, maybe mark as "Pending Manual Review"
+          await updateDoc(doc(db, "payments", paymentRef.id), {
+            status: "Pending Manual Review",
+            reason: "AI verification service unavailable.",
+          });
+          return res.json({ status: "submitted", message: "Payment submitted for manual review." });
         }
       }
 

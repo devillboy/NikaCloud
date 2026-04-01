@@ -7,22 +7,26 @@ import { getApiBase } from '../lib/api';
 
 // Hardcoded plan data
 const BOT_PLANS = [
-  { id: "bot-1", name: "Bot Host Plan 1", price: "₹35", ram: "2 GB", ssd: "8 GB", cpu: "50%", ports: 1, backups: 1 },
-  { id: "bot-2", name: "Bot Host Plan 2", price: "₹70", ram: "4 GB", ssd: "15 GB", cpu: "100%", ports: 2, backups: 1 },
+  { id: "bot-1", name: "Bot Host Plan 1", price: "₹35", ram: "2 GB", ssd: "8 GB", cpu: "50%", ports: 1, backups: 1, popular: true },
+  { id: "bot-2", name: "Bot Host Plan 2", price: "₹70", ram: "4 GB", ssd: "15 GB", cpu: "100%", ports: 2, backups: 1, popular: true },
   { id: "bot-3", name: "Bot Host Plan 3", price: "₹105", ram: "6 GB", ssd: "30 GB", cpu: "150%", ports: 2, backups: 2 },
-  { id: "bot-8", name: "Bot Host Plan 8", price: "₹280", ram: "24 GB", ssd: "150 GB", cpu: "850%", ports: 10, backups: 10, popular: true },
+  { id: "bot-4", name: "Bot Host Plan 4", price: "₹140", ram: "8 GB", ssd: "45 GB", cpu: "200%", ports: 3, backups: 3 },
+  { id: "bot-5", name: "Bot Host Plan 5", price: "₹175", ram: "10 GB", ssd: "60 GB", cpu: "250%", ports: 4, backups: 4 },
+  { id: "bot-8", name: "Bot Host Plan 8", price: "₹280", ram: "24 GB", ssd: "150 GB", cpu: "850%", ports: 10, backups: 10, popular: false },
 ];
 
 const MINECRAFT_PLANS = [
-  { id: "mc-1", name: "Plan 1", price: "₹99", ram: "2 GB", ssd: "8 GB", cpu: "50%" },
-  { id: "mc-2", name: "Plan 2", price: "₹199", ram: "4 GB", ssd: "15 GB", cpu: "100%" },
+  { id: "mc-1", name: "Plan 1", price: "₹99", ram: "2 GB", ssd: "8 GB", cpu: "50%", popular: true },
+  { id: "mc-2", name: "Plan 2", price: "₹199", ram: "4 GB", ssd: "15 GB", cpu: "100%", popular: true },
   { id: "mc-3", name: "Plan 3", price: "₹299", ram: "6 GB", ssd: "25 GB", cpu: "150%" },
-  { id: "mc-10", name: "Plan 10", price: "₹999", ram: "64 GB", ssd: "400 GB", cpu: "2000%", popular: true }
+  { id: "mc-4", name: "Plan 4", price: "₹399", ram: "8 GB", ssd: "40 GB", cpu: "200%" },
+  { id: "mc-10", name: "Plan 10", price: "₹999", ram: "64 GB", ssd: "400 GB", cpu: "2000%", popular: false }
 ];
 
 const VPS_PLANS = [
-  { id: "vps-1", name: "VPS 1", price: "₹699", cores: "2 vCore", ram: "8 GB", storage: "48 GB" },
-  { id: "vps-5", name: "VPS 5", price: "₹4,699", cores: "16 vCore", ram: "64 GB", storage: "256 GB", popular: true }
+  { id: "vps-1", name: "VPS 1", price: "₹699", cores: "2 vCore", ram: "8 GB", storage: "48 GB", popular: true },
+  { id: "vps-2", name: "VPS 2", price: "₹1,299", cores: "4 vCore", ram: "16 GB", storage: "80 GB", popular: true },
+  { id: "vps-5", name: "VPS 5", price: "₹4,699", cores: "16 vCore", ram: "64 GB", storage: "256 GB", popular: false }
 ];
 
 const FEATURES = [
@@ -34,6 +38,7 @@ const FEATURES = [
 
 export default function Home() {
   const [loading, setLoading] = React.useState(true);
+  const [showAllPlans, setShowAllPlans] = React.useState(false);
 
   React.useEffect(() => {
     // Simulate loading for theme consistency
@@ -58,6 +63,10 @@ export default function Home() {
       </div>
     );
   }
+
+  const displayedBotPlans = showAllPlans ? BOT_PLANS : BOT_PLANS.filter(p => p.popular);
+  const displayedMinecraftPlans = showAllPlans ? MINECRAFT_PLANS : MINECRAFT_PLANS.filter(p => p.popular);
+  const displayedVpsPlans = showAllPlans ? VPS_PLANS : VPS_PLANS.filter(p => p.popular);
 
   return (
     <div className="relative w-full overflow-hidden bg-black text-white">
@@ -126,62 +135,119 @@ export default function Home() {
       <section id="plans" className="py-24 relative z-10">
         <div className="container mx-auto px-6">
           
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold mb-4 uppercase tracking-tighter">Premium <span className="text-orange-500">Infrastructure</span></h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Select the perfect node for your project. All plans include DDoS protection and instant setup.</p>
+          </div>
+
           {/* Bot Host Plans */}
           <div className="mb-20">
-            <h2 className="text-4xl font-bold mb-12 text-center">Bot <span className="text-orange-500">Nodes</span></h2>
+            <div className="flex items-center justify-between mb-12">
+              <h2 className="text-3xl font-bold">Bot <span className="text-orange-500">Nodes</span></h2>
+              {!showAllPlans && (
+                <button 
+                  onClick={() => setShowAllPlans(true)}
+                  className="text-orange-500 font-bold text-sm uppercase tracking-widest hover:text-white transition-colors flex items-center gap-2 group"
+                >
+                  Click to see more plans <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {BOT_PLANS.map((plan, i) => (
-                <div key={i} className={`p-6 rounded-3xl bg-white/5 border ${plan.popular ? 'border-orange-500' : 'border-white/10'}`}>
-                  <div className="text-lg font-bold mb-2">{plan.name}</div>
-                  <div className="text-2xl font-bold text-orange-500 mb-4">{plan.price}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
-                  <div className="text-sm text-gray-400 mb-6 space-y-1">
-                    <div>RAM: {plan.ram}</div>
-                    <div>SSD: {plan.ssd}</div>
-                    <div>CPU: {plan.cpu}</div>
+              {displayedBotPlans.map((plan, i) => (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  key={plan.id} 
+                  className={`p-6 rounded-3xl bg-white/5 border transition-all hover:bg-white/[0.07] group ${plan.popular ? 'border-orange-500 shadow-lg shadow-orange-500/10' : 'border-white/10'}`}
+                >
+                  {plan.popular && (
+                    <div className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-4">Most Popular</div>
+                  )}
+                  <div className="text-lg font-bold mb-2 group-hover:text-orange-500 transition-colors">{plan.name}</div>
+                  <div className="text-3xl font-bold text-white mb-4">{plan.price}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
+                  <div className="text-sm text-gray-400 mb-8 space-y-3">
+                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500" /> {plan.ram} RAM</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500" /> {plan.ssd} NVMe SSD</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500" /> {plan.cpu} CPU Core</div>
                   </div>
-                  <Link to="/billing" className="block w-full py-3 rounded-xl bg-white/10 text-center font-bold hover:bg-orange-500 transition-all">Buy Now</Link>
-                </div>
+                  <Link to="/billing" className="block w-full py-4 rounded-2xl bg-white/10 text-center font-bold hover:bg-orange-500 hover:text-white transition-all">Get Started</Link>
+                </motion.div>
               ))}
             </div>
           </div>
 
           {/* Minecraft Plans */}
           <div className="mb-20">
-            <h2 className="text-4xl font-bold mb-12 text-center">Minecraft <span className="text-orange-500">Nodes</span></h2>
+            <div className="flex items-center justify-between mb-12">
+              <h2 className="text-3xl font-bold">Minecraft <span className="text-orange-500">Nodes</span></h2>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {MINECRAFT_PLANS.map((plan, i) => (
-                <div key={i} className={`p-6 rounded-3xl bg-white/5 border ${plan.popular ? 'border-orange-500' : 'border-white/10'}`}>
-                  <div className="text-lg font-bold mb-2">{plan.name}</div>
-                  <div className="text-2xl font-bold text-orange-500 mb-4">{plan.price}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
-                  <div className="text-sm text-gray-400 mb-6 space-y-1">
-                    <div>RAM: {plan.ram}</div>
-                    <div>SSD: {plan.ssd}</div>
-                    <div>CPU: {plan.cpu}</div>
+              {displayedMinecraftPlans.map((plan, i) => (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  key={plan.id} 
+                  className={`p-6 rounded-3xl bg-white/5 border transition-all hover:bg-white/[0.07] group ${plan.popular ? 'border-orange-500 shadow-lg shadow-orange-500/10' : 'border-white/10'}`}
+                >
+                  {plan.popular && (
+                    <div className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-4">Best Value</div>
+                  )}
+                  <div className="text-lg font-bold mb-2 group-hover:text-orange-500 transition-colors">{plan.name}</div>
+                  <div className="text-3xl font-bold text-white mb-4">{plan.price}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
+                  <div className="text-sm text-gray-400 mb-8 space-y-3">
+                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500" /> {plan.ram} RAM</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500" /> {plan.ssd} NVMe SSD</div>
+                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500" /> {plan.cpu} CPU Core</div>
                   </div>
-                  <Link to="/billing" className="block w-full py-3 rounded-xl bg-white/10 text-center font-bold hover:bg-orange-500 transition-all">Buy Now</Link>
-                </div>
+                  <Link to="/billing" className="block w-full py-4 rounded-2xl bg-white/10 text-center font-bold hover:bg-orange-500 hover:text-white transition-all">Get Started</Link>
+                </motion.div>
               ))}
             </div>
           </div>
 
           {/* VPS Plans */}
-          <div>
-            <h2 className="text-4xl font-bold mb-12 text-center">VPS <span className="text-orange-500">Servers</span></h2>
+          <div className="mb-20">
+            <div className="flex items-center justify-between mb-12">
+              <h2 className="text-3xl font-bold">VPS <span className="text-orange-500">Servers</span></h2>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {VPS_PLANS.map((plan, i) => (
-                <div key={i} className={`p-8 rounded-3xl bg-white/5 border ${plan.popular ? 'border-orange-500' : 'border-white/10'}`}>
-                  <div className="text-xl font-bold mb-2">{plan.name}</div>
-                  <div className="text-3xl font-bold text-orange-500 mb-6">{plan.price}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
-                  <div className="text-sm text-gray-400 mb-8 space-y-2">
-                    <div>Cores: {plan.cores}</div>
-                    <div>RAM: {plan.ram}</div>
-                    <div>Storage: {plan.storage}</div>
+              {displayedVpsPlans.map((plan, i) => (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  key={plan.id} 
+                  className={`p-8 rounded-3xl bg-white/5 border transition-all hover:bg-white/[0.07] group ${plan.popular ? 'border-orange-500 shadow-lg shadow-orange-500/10' : 'border-white/10'}`}
+                >
+                  {plan.popular && (
+                    <div className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-4">Enterprise Choice</div>
+                  )}
+                  <div className="text-xl font-bold mb-2 group-hover:text-orange-500 transition-colors">{plan.name}</div>
+                  <div className="text-4xl font-bold text-white mb-6">{plan.price}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
+                  <div className="text-sm text-gray-400 mb-10 space-y-4">
+                    <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> {plan.cores} Dedicated</div>
+                    <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> {plan.ram} RAM</div>
+                    <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500" /> {plan.storage} NVMe</div>
                   </div>
-                  <Link to="/billing" className="block w-full py-4 rounded-xl bg-white/10 text-center font-bold hover:bg-orange-500 transition-all">Buy Now</Link>
-                </div>
+                  <Link to="/billing" className="block w-full py-5 rounded-2xl bg-white/10 text-center font-bold hover:bg-orange-500 hover:text-white transition-all">Get Started</Link>
+                </motion.div>
               ))}
             </div>
           </div>
+
+          {showAllPlans && (
+            <div className="text-center">
+              <button 
+                onClick={() => setShowAllPlans(false)}
+                className="px-8 py-4 bg-white/5 border border-white/10 rounded-full font-bold text-white hover:bg-white/10 transition-all"
+              >
+                Show Less Plans
+              </button>
+            </div>
+          )}
 
         </div>
       </section>
