@@ -327,14 +327,18 @@ async function startServer() {
       // Email removed
 
       // Simulate Automation: Create server in Firestore
+      const nodeNumber = Math.floor(Math.random() * 3) + 1; // Randomly pick Node 1, 2, or 3
       const serverIp = `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`;
       const serverRef = await addDoc(collection(db, "servers"), {
-        name: `${planName} Node`,
+        name: `${planName} Node ${nodeNumber}`,
         type: planId.startsWith('mc') ? 'minecraft' : (planId.startsWith('bot') ? 'bot' : 'vps'),
+        nodeType: 'Paid Node',
+        nodeId: nodeNumber,
         status: "Starting",
         ip: serverIp,
         userId,
         planId,
+        isPaid: true,
         duration: parseInt(duration),
         expiresAt: expiryDate.toISOString(),
         createdAt: serverTimestamp(),
@@ -358,19 +362,32 @@ async function startServer() {
     try {
       // In a real app, you'd trigger server creation here.
       // For now, we simulate the automation.
+      const nodeNumber = Math.floor(Math.random() * 3) + 1; // Randomly pick Node 1, 2, or 3
+      const expiryDate = new Date();
+      expiryDate.setMonth(expiryDate.getMonth() + 1); // 1 month expiry for free servers too
+
       const serverRef = await addDoc(collection(db, "servers"), {
-        name: serverName.trim(),
+        name: `${serverName.trim()} (Node ${nodeNumber})`,
         type: "Free Node",
+        nodeType: 'Free Node',
+        nodeId: nodeNumber,
         status: "Starting",
         ip: `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`,
         userId,
         planId: 'free-tier',
+        isPaid: false,
+        expiresAt: expiryDate.toISOString(),
         specs: {
           ram: '5GB',
           cpu: '100%',
           ssd: '10GB'
         },
         createdAt: serverTimestamp()
+      });
+
+      // Update user's claim status
+      await updateDoc(doc(db, "users", userId), {
+        hasClaimedFreeServer: true
       });
 
       res.json({
@@ -416,13 +433,91 @@ async function startServer() {
     try {
       const serversSnapshot = await getDocs(collection(db, 'servers'));
       const usersSnapshot = await getDocs(collection(db, 'users'));
+      const paymentsSnapshot = await getDocs(collection(db, 'payments'));
+      
+      const totalRevenue = paymentsSnapshot.docs
+        .filter(d => d.data().status === 'Approved')
+        .reduce((sum, d) => sum + (d.data().amount || 0), 0);
+
       res.json({
         serversCount: serversSnapshot.size,
         usersCount: usersSnapshot.size,
+        paymentsCount: paymentsSnapshot.size,
+        totalRevenue,
         servers: serversSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
       });
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch admin stats' });
+    }
+  });
+
+  // Coupon System
+  app.get('/api/coupons', async (req, res) => {
+    try {
+      const snapshot = await getDocs(collection(db, 'coupons'));
+      res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch coupons' });
+    }
+  });
+
+  app.post('/api/coupons/validate', async (req, res) => {
+    const { code } = req.body;
+    try {
+      const q = query(collection(db, 'coupons'), where('code', '==', code.toUpperCase()));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        return res.status(404).json({ error: 'Invalid coupon code' });
+      }
+      const coupon = snapshot.docs[0].data();
+      if (coupon.expiry && new Date(coupon.expiry) < new Date()) {
+        return res.status(400).json({ error: 'Coupon has expired' });
+      }
+      res.json({ id: snapshot.docs[0].id, ...coupon });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to validate coupon' });
+    }
+  });
+
+  app.post('/api/admin/coupons', async (req, res) => {
+    const couponData = req.body;
+    try {
+      const docRef = await addDoc(collection(db, 'coupons'), {
+        ...couponData,
+        code: couponData.code.toUpperCase(),
+        createdAt: serverTimestamp()
+      });
+      res.json({ id: docRef.id, ...couponData });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create coupon' });
+    }
+  });
+
+  app.delete('/api/admin/coupons/:id', async (req, res) => {
+    try {
+      await deleteDoc(doc(db, 'coupons', req.params.id));
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete coupon' });
+    }
+  });
+
+  // User Management
+  app.patch('/api/admin/users/:id', async (req, res) => {
+    try {
+      await updateDoc(doc(db, 'users', req.params.id), req.body);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update user' });
+    }
+  });
+
+  app.delete('/api/admin/users/:id', async (req, res) => {
+    try {
+      await deleteDoc(doc(db, 'users', req.params.id));
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete user' });
     }
   });
 
@@ -544,14 +639,22 @@ async function startServer() {
       await updateDoc(doc(db, 'payments', id), { status, verifiedAt: serverTimestamp() });
       
       if (status === 'Approved') {
+        const nodeNumber = Math.floor(Math.random() * 3) + 1;
         const serverIp = `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`;
+        const expiryDate = new Date();
+        expiryDate.setMonth(expiryDate.getMonth() + (payment.duration || 1));
+
         await addDoc(collection(db, "servers"), {
-          name: `${payment.planName || 'Minecraft'} Server`,
-          type: "Minecraft",
+          name: `${payment.planName || 'Minecraft'} Node ${nodeNumber}`,
+          type: payment.planId?.startsWith('mc') ? 'minecraft' : (payment.planId?.startsWith('bot') ? 'bot' : 'vps'),
+          nodeType: 'Paid Node',
+          nodeId: nodeNumber,
           status: "Starting",
           ip: serverIp,
           userId: payment.userId,
           planId: payment.planId,
+          isPaid: true,
+          expiresAt: expiryDate.toISOString(),
           panelId: Math.floor(Math.random() * 10000).toString(),
           specs: payment.specs || { ram: "Unknown", cpu: "Unknown", ssd: "Unknown" },
           createdAt: serverTimestamp(),

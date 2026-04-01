@@ -42,12 +42,12 @@ export default function ClaimFreeServer() {
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login');
-    } else if (!loading && user && hasClaimedFreeServer && !success) {
+    } else if (!loading && user && hasClaimedFreeServer && !success && !claiming) {
       navigate('/dashboard');
     } else if (user && !serverName) {
       setServerName(`${user.displayName || user.email?.split('@')[0]}'s Node`);
     }
-  }, [user, hasClaimedFreeServer, loading, navigate, success]);
+  }, [user, hasClaimedFreeServer, loading, navigate, success, claiming]);
 
   const handleClaim = async () => {
     if (!user) return;

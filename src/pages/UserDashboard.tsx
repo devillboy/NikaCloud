@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Server, Cpu, HardDrive, MemoryStick, Play, Square, RotateCcw, ExternalLink, Activity } from 'lucide-react';
+import { Server, Cpu, HardDrive, MemoryStick, Play, Square, RotateCcw, ExternalLink, Activity, AlertTriangle, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,6 +28,7 @@ export default function UserDashboard() {
   const [servers, setServers] = useState<ServerData[]>([]);
   const [fetching, setFetching] = useState(true);
   const [realServerData, setRealServerData] = useState<Record<string, any>>({});
+  const [showBackupPopup, setShowBackupPopup] = useState<string | null>(null);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
@@ -59,6 +60,19 @@ export default function UserDashboard() {
         const serverList = await response.json();
         setServers(serverList);
         setFetching(false);
+
+        // Check for expired servers to show backup popup
+        const now = new Date();
+        const expiredServer = serverList.find((s: any) => {
+          if (!s.expiresAt) return false;
+          const expiry = new Date(s.expiresAt);
+          const gracePeriodEnd = new Date(expiry.getTime() + 7 * 24 * 60 * 60 * 1000);
+          return now > expiry && now < gracePeriodEnd;
+        });
+        
+        if (expiredServer && !showBackupPopup) {
+          setShowBackupPopup(expiredServer.id);
+        }
 
         // Fetch real details from panel for each server
         serverList.forEach(async (server: any) => {
@@ -100,6 +114,52 @@ export default function UserDashboard() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
       
       <div className="max-w-7xl mx-auto relative z-10">
+        {/* Backup Warning Popup */}
+        {showBackupPopup && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm"
+          >
+            <div className="bg-slate-900 border border-red-500/30 rounded-3xl p-8 max-w-md w-full shadow-2xl shadow-red-500/10 relative">
+              <button 
+                onClick={() => setShowBackupPopup(null)}
+                className="absolute top-4 right-4 p-2 hover:bg-white/5 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+              
+              <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-6 border border-red-500/20">
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              </div>
+              
+              <h2 className="text-2xl font-bold text-white mb-2">Action Required!</h2>
+              <p className="text-slate-400 mb-6 leading-relaxed">
+                Your server has expired. It will be <span className="text-red-400 font-bold underline">permanently deleted</span> in 7 days if not renewed. 
+                <br /><br />
+                Please <span className="text-white font-bold">TAKE YOUR BACKUP</span> immediately from the panel to avoid data loss.
+              </p>
+              
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => navigate('/billing')}
+                  className="w-full py-4 bg-brand-accent hover:bg-brand-accent-bright text-white rounded-2xl font-bold transition-all shadow-lg shadow-brand-accent/20"
+                >
+                  Renew Server Now
+                </button>
+                <a 
+                  href="https://gp.nikacloud.in" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold text-center transition-all border border-white/10"
+                >
+                  Go to Panel for Backup
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">My Servers</h1>
@@ -167,7 +227,9 @@ export default function UserDashboard() {
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-white">{server.name}</h3>
-                        <p className="text-sm text-slate-400">{server.type}</p>
+                        <p className="text-sm text-slate-400">
+                          {server.nodeType || (server.isPaid ? 'Paid Node' : 'Free Node')} • Node {server.nodeId || '1'}
+                        </p>
                       </div>
                     </div>
                     <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5
@@ -232,14 +294,12 @@ export default function UserDashboard() {
 
                 {/* Actions */}
                 <div className="p-6 bg-slate-900/30 mt-auto flex gap-3">
-                  <a 
-                    href={`https://gp.nikacloud.in/server/${server.panelId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button 
+                    onClick={() => navigate(`/server/${server.id}`)}
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent rounded-xl font-medium transition-colors border border-brand-accent/20"
                   >
-                    <ExternalLink className="w-4 h-4" /> Manage
-                  </a>
+                    <ExternalLink className="w-4 h-4" /> Details
+                  </button>
                   {(isExpired || isExpiringSoon) && (
                     <button 
                       onClick={() => navigate('/billing')}

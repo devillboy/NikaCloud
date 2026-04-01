@@ -17,6 +17,7 @@ import PaymentResult from './pages/PaymentResult';
 import About from './pages/About';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
+import ServerDetails from './pages/ServerDetails';
 import { useFCM } from './hooks/useFCM';
 
 export default function App() {
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="/about" element={<About />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/server/:id" element={<ServerDetails />} />
           </Routes>
         </main>
         <Footer />

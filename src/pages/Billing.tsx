@@ -57,6 +57,12 @@ export default function Billing() {
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // Coupon State
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  
   // UPI Form State
   const [upiId, setUpiId] = useState("");
   const [utrId, setUtrId] = useState("");
@@ -72,6 +78,17 @@ export default function Billing() {
         if (!res.ok) throw new Error(`Infrastructure API Error: ${res.status}`);
         const data = await res.json();
         setPlans(data);
+
+        // Pre-select plan from URL
+        const params = new URLSearchParams(window.location.search);
+        const planId = params.get('plan');
+        if (planId) {
+          const plan = data.find((p: any) => p.id === planId);
+          if (plan) {
+            setSelectedPlan(plan);
+            setSelectedCategory(plan.type);
+          }
+        }
       } catch (err: any) {
         console.error("Error fetching plans:", err);
         setError(`Failed to load plans. Please try again.`);
@@ -81,6 +98,50 @@ export default function Billing() {
     };
     fetchPlans();
   }, []);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setValidatingCoupon(true);
+    setCouponError(null);
+    try {
+      const response = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponCode })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setAppliedCoupon(data);
+        setCouponCode("");
+      } else {
+        setCouponError(data.error || "Invalid coupon");
+      }
+    } catch (err) {
+      setCouponError("Failed to validate coupon");
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
+  const calculateDiscountedPrice = () => {
+    if (!selectedPlan) return 0;
+    const basePrice = typeof selectedPlan.price === 'string' 
+      ? parseInt(selectedPlan.price.replace(/[^0-9]/g, '')) 
+      : selectedPlan.price;
+    
+    let price = duration >= 12 
+      ? Math.floor(basePrice * duration * 0.8) 
+      : basePrice * duration;
+
+    if (appliedCoupon) {
+      if (appliedCoupon.type === 'percentage') {
+        price = Math.floor(price * (1 - appliedCoupon.discount / 100));
+      } else {
+        price = Math.max(0, price - appliedCoupon.discount);
+      }
+    }
+    return price;
+  };
 
   const filteredPlans = plans.filter(p => p.type === selectedCategory);
 
@@ -113,9 +174,19 @@ export default function Billing() {
       const basePrice = typeof selectedPlan.price === 'string' 
         ? parseInt(selectedPlan.price.replace(/[^0-9]/g, '')) 
         : selectedPlan.price;
-      const totalPrice = duration >= 12 
+      
+      let totalPrice = duration >= 12 
         ? Math.floor(basePrice * duration * 0.8) 
         : basePrice * duration;
+
+      // Apply Coupon
+      if (appliedCoupon) {
+        if (appliedCoupon.type === 'percentage') {
+          totalPrice = Math.floor(totalPrice * (1 - appliedCoupon.discount / 100));
+        } else {
+          totalPrice = Math.max(0, totalPrice - appliedCoupon.discount);
+        }
+      }
 
       const apiBase = getApiBase();
 
@@ -367,10 +438,44 @@ export default function Billing() {
                       </div>
                     </div>
 
+                    {/* Coupon Input */}
+                    <div className="space-y-3 pt-4 border-t border-white/10">
+                      <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Promo Code</div>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="Enter code" 
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)}
+                          className="flex-1 bg-black border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-orange-500 outline-none transition-all"
+                        />
+                        <button 
+                          onClick={handleApplyCoupon}
+                          disabled={validatingCoupon || !couponCode.trim()}
+                          className="bg-white text-black px-4 py-2 rounded-xl text-xs font-bold hover:bg-orange-500 hover:text-white transition-all disabled:opacity-50"
+                        >
+                          {validatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                        </button>
+                      </div>
+                      {couponError && <p className="text-red-500 text-[10px] font-bold">{couponError}</p>}
+                      {appliedCoupon && (
+                        <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 p-2 rounded-xl">
+                          <span className="text-green-400 text-[10px] font-bold uppercase">{appliedCoupon.code} Applied!</span>
+                          <button onClick={() => setAppliedCoupon(null)} className="text-green-400 hover:text-white text-xs">✕</button>
+                        </div>
+                      )}
+                    </div>
+
                     <div className="pt-6 border-t border-white/10">
+                      {appliedCoupon && (
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-500">Discount</span>
+                          <span className="text-green-400">-{appliedCoupon.type === 'percentage' ? `${appliedCoupon.discount}%` : `₹${appliedCoupon.discount}`}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between items-end mb-8">
                         <span className="text-gray-400">Total Due</span>
-                        <span className="text-3xl font-bold text-orange-500">{selectedPlan.price}</span>
+                        <span className="text-3xl font-bold text-orange-500">₹{calculateDiscountedPrice()}</span>
                       </div>
                       
                       <button
