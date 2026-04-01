@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Server, Clock, AlertTriangle, RefreshCw, Shield, Zap } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const UserPlans = () => {
   const { user } = useAuth();

@@ -331,6 +331,9 @@ async function startServer() {
       const nodeNumber = Math.floor(Math.random() * 3) + 1; // Randomly pick Node 1, 2, or 3
       const serverIp = `144.217.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}:25565`;
       
+      const expiryDate = new Date();
+      expiryDate.setMonth(expiryDate.getMonth() + parseInt(duration));
+
       // Grace period: 7 days after expiry
       const deleteDate = new Date(expiryDate);
       deleteDate.setDate(deleteDate.getDate() + 7);

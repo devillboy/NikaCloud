@@ -13,31 +13,18 @@ export default function ClaimFreeServer() {
   const [claimStatus, setClaimStatus] = useState<'idle' | 'provisioning' | 'installing' | 'finalizing'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [eggs, setEggs] = useState<any[]>([]);
-  const [loadingEggs, setLoadingEggs] = useState(true);
-  const [selectedEgg, setSelectedEgg] = useState<number | null>(null);
+  const [eggs, setEggs] = useState<any[]>([
+    { id: 1, name: 'Vanilla Minecraft', description: 'Standard Minecraft server' },
+    { id: 2, name: 'Paper', description: 'High performance, plugin support' },
+    { id: 4, name: 'Forge', description: 'Modded Minecraft support' },
+    { id: 15, name: 'Node.js', description: 'Host Discord bots & web apps' },
+    { id: 16, name: 'Python', description: 'Host Python scripts & bots' }
+  ]);
+  const [loadingEggs, setLoadingEggs] = useState(false);
+  const [selectedEgg, setSelectedEgg] = useState<number | null>(2); // Default to Paper
   const [serverName, setServerName] = useState('');
   const [credentials, setCredentials] = useState<{username: string, password: string, panelUrl: string} | null>(null);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    const fetchEggs = async () => {
-      try {
-        const response = await fetch('/api/eggs');
-        const data = await response.json();
-        setEggs(data);
-        if (data.length > 0) {
-          setSelectedEgg(data[1]?.id || data[0].id); // Default to Paper or first available
-        }
-      } catch (err) {
-        console.error("Error fetching eggs:", err);
-      } finally {
-        setLoadingEggs(false);
-      }
-    };
-
-    fetchEggs();
-  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
